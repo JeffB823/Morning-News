@@ -1,0 +1,593 @@
+# If the previous files are missing in this session, write a fresh full HTML that includes the richer FEEDS.
+html = r"""<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Morning News — Elite Mobile + Weather Pro (Diverse Sources)</title>
+  <meta name="color-scheme" content="light dark">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] },
+          boxShadow: {
+            subtle: '0 4px 16px rgba(2,6,23,.06), 0 1px 4px rgba(2,6,23,.05)',
+            card: '0 8px 28px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.06)'
+          }
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --radius: 16px; --tintA: rgba(99, 102, 241, 0.06); --tintB: rgba(14, 165, 233, 0.06); }
+    .line-clamp-5 { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
+    @media (prefers-color-scheme: dark) { .thumb { background: #0b1220; } }
+    .glass { backdrop-filter: saturate(140%) blur(8px); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+    .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
+    .bg-dynamic { transition: background 600ms cubic-bezier(.2,.8,.2,1); }
+    .card-sky { background-image: linear-gradient(180deg, var(--tintA), var(--tintB)); }
+  </style>
+</head>
+<body class="h-full text-slate-900 dark:text-slate-100 bg-dynamic">
+  <header class="sticky top-0 z-40 glass bg-white/85 dark:bg-slate-950/75 border-b border-slate-200 dark:border-slate-800 safe-top">
+    <div class="max-w-screen-sm mx-auto px-3 py-2 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 shadow-subtle" aria-hidden="true"></div>
+        <div class="min-w-0">
+          <h1 class="text-base font-extrabold tracking-tight leading-tight truncate">Morning News</h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate">National · Ohio · Columbus · Home Lending · AI</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="themeBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Theme</button>
+        <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
+      </div>
+    </div>
+    <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
+      <input id="filterBox" type="search" placeholder="Filter headlines…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
+      <button id="locBtn" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍 Locate</button>
+    </div>
+    <div class="max-w-screen-sm mx-auto px-3 pb-2 space-y-2">
+      <div id="wxCard" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between">
+        <div class="min-w-0">
+          <div id="wxPlace" class="font-semibold truncate">—</div>
+          <div id="wxDesc" class="text-xs text-slate-600 dark:text-slate-400 truncate">—</div>
+        </div>
+        <div class="text-right">
+          <div id="wxTemp" class="text-lg font-bold">—°</div>
+          <div id="wxMeta" class="text-xs text-slate-600 dark:text-slate-400">—</div>
+        </div>
+      </div>
+      <div id="wxStrip" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-2 overflow-x-auto no-scrollbar">
+        <div id="wxRow" class="flex gap-2"></div>
+      </div>
+      <div id="wxHint" class="text-[11px] text-slate-500 dark:text-slate-400">Detecting weather… If prompted, allow location.</div>
+    </div>
+  </header>
+
+  <main class="max-w-screen-sm mx-auto px-3 pt-3 pb-24">
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <div class="inline-flex rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+        <button id="modeHeadlines" class="px-3 py-1.5 text-xs bg-slate-900 text-white dark:bg-white dark:text-slate-900">Headlines</button>
+        <button id="modeSummaries" class="px-3 py-1.5 text-xs">Summaries</button>
+        <button id="modeReader" class="px-3 py-1.5 text-xs">Reader</button>
+      </div>
+      <select id="autoRefresh" class="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">
+        <option value="0">Auto</option>
+        <option value="5">5m</option>
+        <option value="10" selected>10m</option>
+        <option value="30">30m</option>
+      </select>
+    </div>
+    <div class="mb-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400" id="status">Loading…</div>
+    <div id="panel" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/70 shadow-card card-sky">
+      <ol id="list" class="divide-y divide-slate-200 dark:divide-slate-800 overflow-y-auto no-scrollbar" style="max-height: 62dvh;" aria-live="polite"></ol>
+    </div>
+  </main>
+
+  <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/90 dark:bg-slate-950/85 border-t border-slate-200 dark:border-slate-800 safe-bottom">
+    <div id="tabs" class="max-w-screen-sm mx-auto px-2 grid grid-cols-5 gap-2 text-[11px]"></div>
+  </nav>
+
+  <div id="reader" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
+    <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-card flex flex-col max-w-screen-sm mx-auto">
+      <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 id="readerTitle" class="text-base font-bold leading-tight line-clamp-2"></h2>
+          <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
+          <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
+        </div>
+      </div>
+      <img id="readerImg" class="m-3 rounded-xl max-h-48 object-cover hidden" alt="">
+      <div id="readerBody" class="prose prose-sm dark:prose-invert max-w-none px-3 pb-3 overflow-y-auto" style="max-height: 60dvh;"></div>
+    </div>
+  </div>
+
+  <script>
+    // Diverse, trusted source mix
+    const FEEDS = {
+      "National News": [
+        "https://feeds.reuters.com/reuters/topNews",
+        "https://feeds.apnews.com/apf-topnews",
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://www.npr.org/sections/news/archive.rss",
+        "https://www.pbs.org/newshour/feeds/rss/headlines",
+        "https://www.theguardian.com/us-news/rss",
+        "https://www.aljazeera.com/xml/rss/all.xml",
+        "https://www.axios.com/feeds/feed.rss",
+        "https://www.politico.com/rss/politics-news.xml"
+      ],
+      "Ohio News": [
+        "https://ohiocapitaljournal.com/feed/",
+        "https://www.cleveland.com/ohio/rss.xml",
+        "https://www.dispatch.com/arcio/rss/category/news/?outputType=xml",
+        "https://www.cincinnati.com/rss/news"
+      ],
+      "Columbus News": [
+        "https://news.wosu.org/rss",
+        "https://www.nbc4i.com/feed/",
+        "https://abc6onyourside.com/rss",
+        "https://www.10tv.com/feeds/rssFeed?section=news",
+        "https://www.columbusunderground.com/feed/"
+      ],
+      "Home Lending News": [
+        "https://www.housingwire.com/section/mortgage/feed/",
+        "https://www.mortgagenewsdaily.com/rss",
+        "https://www.nationalmortgagenews.com/rss",
+        "https://www.fhfa.gov/Feeds/News",
+        "https://www.consumerfinance.gov/about-us/newsroom/feed/"
+      ],
+      "AI News": [
+        "https://www.technologyreview.com/feed/",
+        "https://openai.com/blog/rss",
+        "https://ai.googleblog.com/feeds/posts/default?alt=rss",
+        "https://www.anthropic.com/news/rss.xml",
+        "https://ai.facebook.com/blog/rss/",
+        "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "https://www.techcrunch.com/tag/artificial-intelligence/feed/",
+        "https://arstechnica.com/information-technology/feed/"
+      ]
+    };
+
+    const FEED_MAX = 50;
+    const FETCH_TIMEOUT_MS = 12000;
+    const CACHE_TTL_MS = 5 * 60 * 1000;
+
+    // Weather utils (same as earlier pro build)
+    const WX = {
+      palette(code, isDay) {
+        const day = [
+          ["#dfe9f3","#ffffff"],
+          ["#fef9c3","#fde68a"],
+          ["#dbeafe","#bfdbfe"],
+          ["#e2e8f0","#cbd5e1"],
+          ["#e5e7eb","#9ca3af"],
+          ["#c7d2fe","#93c5fd"],
+          ["#e9d5ff","#c4b5fd"],
+          ["#f1f5f9","#e2e8f0"],
+          ["#fde68a","#f59e0b"],
+          ["#fff1f2","#fecdd3"]
+        ];
+        const night = [
+          ["#0f172a","#1e293b"],
+          ["#0b132b","#1c2541"],
+          ["#0b1220","#1f2a44"],
+          ["#0f172a","#334155"],
+          ["#0f172a","#475569"],
+          ["#0b1220","#273f6a"],
+          ["#1d1b3a","#3b2f6b"],
+          ["#111827","#374151"],
+          ["#1f2937","#374151"],
+          ["#1f2937","#334155"]
+        ];
+        const pal = isDay ? day : night;
+        if ([0,1].includes(code)) return pal[1];
+        if ([2,3].includes(code)) return pal[2];
+        if ([45,48].includes(code)) return pal[7];
+        if ([51,53,55].includes(code)) return pal[4];
+        if ([56,57,61,63,65,66,67,80,81,82].includes(code)) return pal[5];
+        if ([71,73,75,77,85,86].includes(code)) return pal[9];
+        if ([95,96,99].includes(code)) return pal[6];
+        return pal[0];
+      },
+      text(code) {
+        if ([0].includes(code)) return "Clear sky";
+        if ([1].includes(code)) return "Mainly clear";
+        if ([2].includes(code)) return "Partly cloudy";
+        if ([3].includes(code)) return "Overcast";
+        if ([45,48].includes(code)) return "Fog";
+        if ([51,53,55].includes(code)) return "Drizzle";
+        if ([56,57].includes(code)) return "Freezing drizzle";
+        if ([61,63,65].includes(code)) return "Rain";
+        if ([66,67].includes(code)) return "Freezing rain";
+        if ([71,73,75].includes(code)) return "Snowfall";
+        if ([77].includes(code)) return "Snow grains";
+        if ([80,81,82].includes(code)) return "Rain showers";
+        if ([85,86].includes(code)) return "Snow showers";
+        if ([95].includes(code)) return "Thunderstorm";
+        if ([96,99].includes(code)) return "Thunderstorm w/ hail";
+        return "Weather";
+      },
+      emoji(code, isDay) {
+        const sun="☀️", moon="🌙", cloud="☁️", rain="🌧️", th="⛈️", snow="❄️", fog="🌫️";
+        if (code===0) return isDay?sun:moon;
+        if (code===1) return isDay?sun:moon;
+        if (code===2) return "⛅";
+        if (code===3) return cloud;
+        if ([45,48].includes(code)) return fog;
+        if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return rain;
+        if ([71,73,75,77,85,86].includes(code)) return snow;
+        if ([95,96,99].includes(code)) return th;
+        return "🌤️";
+      }
+    };
+    function hexToRgba(hex, a) {
+      const h = hex.replace('#','');
+      const bigint = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+    function setDynamicBackground(code, isDay) {
+      const [c1, c2] = WX.palette(code, !!isDay);
+      document.body.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+      document.body.style.backgroundAttachment = "fixed";
+      document.documentElement.style.setProperty('--tintA', `${hexToRgba(c1, 0.10)}`);
+      document.documentElement.style.setProperty('--tintB', `${hexToRgba(c2, 0.10)}`);
+    }
+
+    // Theme / UI refs
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedTheme = localStorage.getItem('theme');
+    if ((storedTheme === 'dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
+    const themeBtn = document.getElementById('themeBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const filterBox = document.getElementById('filterBox');
+    const locBtn = document.getElementById('locBtn');
+    const wxCard = document.getElementById('wxCard');
+    const wxPlace = document.getElementById('wxPlace');
+    const wxDesc = document.getElementById('wxDesc');
+    const wxTemp = document.getElementById('wxTemp');
+    const wxMeta = document.getElementById('wxMeta');
+    const wxHint = document.getElementById('wxHint');
+    const wxStrip = document.getElementById('wxStrip');
+    const wxRow = document.getElementById('wxRow');
+
+    themeBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // Weather loading
+    async function fetchJSON(url) {
+      const ctrl = new AbortController();
+      const id = setTimeout(()=>ctrl.abort(), 12000);
+      try { const r = await fetch(url, {signal: ctrl.signal}); if (!r.ok) throw new Error("HTTP "+r.status); return r.json(); }
+      finally { clearTimeout(id); }
+    }
+    async function reverseGeocode(lat, lon) {
+      try {
+        const j = await fetchJSON(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);
+        const p = j?.results?.[0];
+        if (!p) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        const parts = [p.name, p.admin1, p.country].filter(Boolean);
+        return parts.join(", ");
+      } catch { return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
+    }
+    function chip(prob) {
+      if (prob >= 70) return "bg-sky-600 text-white";
+      if (prob >= 40) return "bg-sky-300 text-slate-800";
+      if (prob > 0) return "bg-sky-100 text-slate-800";
+      return "bg-slate-100 text-slate-600";
+    }
+    async function loadWeather(lat, lon) {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,is_day&timezone=auto`;
+        const j = await fetchJSON(url);
+        const cur = j.current_weather;
+        const place = await reverseGeocode(lat, lon);
+        const code = cur.weathercode ?? 2;
+        const isDay = cur.is_day ?? 1;
+        const emoji = WX.emoji(code, isDay);
+        wxPlace.textContent = place;
+        wxDesc.textContent = `${emoji} ${WX.text(code)} · Wind ${Math.round(cur.windspeed)} km/h`;
+        wxTemp.textContent = `${Math.round(cur.temperature)}°`;
+        wxMeta.textContent = `As of ${new Date().toLocaleTimeString()}`;
+        wxCard.classList.remove("hidden");
+        wxHint.classList.add("hidden");
+        setDynamicBackground(code, isDay);
+        // Hourly strip
+        const hours = j.hourly.time;
+        const temps = j.hourly.temperature_2m;
+        const probs = j.hourly.precipitation_probability || [];
+        const wxcodes = j.hourly.weathercode || [];
+        const now = Date.now();
+        const next24 = [];
+        for (let i=0;i<hours.length;i++) {
+          const ts = new Date(hours[i]).getTime();
+          if (ts >= now && next24.length < 24) {
+            next24.push({ ts, temp: Math.round(temps[i]), prob: probs[i] ?? 0, code: wxcodes[i] ?? code, isDay: j.hourly.is_day ? j.hourly.is_day[i] : isDay });
+          }
+        }
+        wxRow.innerHTML = "";
+        next24.forEach(h => {
+          const el = document.createElement('div');
+          el.className = `min-w-[54px] rounded-lg p-2 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 ${chip(h.prob)}`;
+          el.innerHTML = `
+            <div class="text-[11px] opacity-80">${new Date(h.ts).toLocaleTimeString([], {hour:'numeric'})}</div>
+            <div class="text-base font-bold leading-tight">${h.temp}°</div>
+            <div class="text-[14px]">${WX.emoji(h.code, h.isDay)}</div>
+            <div class="text-[10px] opacity-80">${h.prob||0}%</div>
+          `;
+          wxRow.appendChild(el);
+        });
+        wxStrip.classList.remove("hidden");
+        localStorage.setItem("wx", JSON.stringify({lat, lon, cur, place, t: Date.now(), next24}));
+      } catch (e) {
+        wxDesc.textContent = "Weather unavailable right now.";
+        wxCard.classList.remove("hidden");
+      }
+    }
+    function getLocationAndLoad() {
+      if (!navigator.geolocation) {
+        wxHint.textContent = "Geolocation not supported.";
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords || {};
+        if (typeof lat === "number" && typeof lon === "number") {
+          await loadWeather(lat, lon);
+        }
+      }, (err) => {
+        wxHint.textContent = "Location permission denied. Tap 📍 to retry or enable in Settings.";
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    }
+    document.getElementById('locBtn').addEventListener("click", getLocationAndLoad);
+    (function bootWeather(){
+      try {
+        const cached = JSON.parse(localStorage.getItem("wx")||"null");
+        if (cached && Date.now() - cached.t < 30*60*1000) {
+          const {lat, lon, cur, place, next24=[]} = cached;
+          const code = cur.weathercode ?? 2;
+          const isDay = cur.is_day ?? 1;
+          wxPlace.textContent = place;
+          wxDesc.textContent = `${WX.emoji(code,isDay)} ${WX.text(code)} · Wind ${Math.round(cur.windspeed)} km/h`;
+          wxTemp.textContent = `${Math.round(cur.temperature)}°`;
+          wxMeta.textContent = `Cached · ${new Date(cached.t).toLocaleTimeString()}`;
+          wxCard.classList.remove("hidden");
+          setDynamicBackground(code, isDay);
+          if (next24.length) {
+            wxRow.innerHTML = "";
+            next24.slice(0,24).forEach(h => {
+              const el = document.createElement('div');
+              el.className = `min-w-[54px] rounded-lg p-2 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 ${chip(h.prob)}`;
+              el.innerHTML = `
+                <div class="text-[11px] opacity-80">${new Date(h.ts).toLocaleTimeString([], {hour:'numeric'})}</div>
+                <div class="text-base font-bold leading-tight">${h.temp}°</div>
+                <div class="text-[14px]">${WX.emoji(h.code, h.isDay)}</div>
+                <div class="text-[10px] opacity-80">${h.prob||0}%</div>
+              `;
+              wxRow.appendChild(el);
+            });
+            wxStrip.classList.remove("hidden");
+          }
+        }
+      } catch {}
+      getLocationAndLoad();
+    })();
+
+    // News app
+    const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+    const normUrl = (url) => { try{ const u=new URL(url); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","utm_id"].forEach(p=>u.searchParams.delete(p)); return u.toString(); } catch { return url; } };
+    const list = document.getElementById('list');
+    const statusEl = document.getElementById('status');
+    const tabs = document.getElementById('tabs');
+    const modeHeadlines = document.getElementById('modeHeadlines');
+    const modeSummaries = document.getElementById('modeSummaries');
+    const modeReader = document.getElementById('modeReader');
+    const reader = document.getElementById('reader');
+    const readerBackdrop = document.getElementById('readerBackdrop');
+    const readerTitle = document.getElementById('readerTitle');
+    const readerMeta = document.getElementById('readerMeta');
+    const readerImg = document.getElementById('readerImg');
+    const readerBody = document.getElementById('readerBody');
+    const readerOpen = document.getElementById('readerOpen');
+    const readerClose = document.getElementById('readerClose');
+    let dataByCategory = {};
+    let currentCatIndex = 0;
+    const categories = Object.keys(FEEDS);
+    let mode = 'summaries';
+
+    function setMode(m) {
+      mode = m;
+      [modeHeadlines, modeSummaries, modeReader].forEach(btn => btn.classList.remove('bg-slate-900','text-white','dark:bg-white','dark:text-slate-900'));
+      const btn = m==='headlines'?modeHeadlines : m==='summaries'?modeSummaries : modeReader;
+      btn.classList.add('bg-slate-900','text-white','dark:bg-white','dark:text-slate-900');
+      if (m !== 'reader') reader.classList.add('hidden');
+      renderList();
+    }
+    modeHeadlines.addEventListener('click', ()=>setMode('headlines'));
+    modeSummaries.addEventListener('click', ()=>setMode('summaries'));
+    modeReader.addEventListener('click', ()=>setMode('reader'));
+
+    function timeAgo(dateStr) {
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      const s = Math.floor((Date.now() - d.getTime()) / 1000);
+      const pairs = [["yr",31536000],["mo",2592000],["d",86400],["h",3600],["m",60],["s",1]];
+      for (const [n,sec] of pairs) { const v = Math.floor(s/sec); if (v>=1) return `${v}${n}`; }
+      return "now";
+    }
+    function cleanHtml(html) { return (html||"").replace(/<script[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style[^>]*>[\s\S]*?<\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
+    function makeSummary(text, maxChars=600) {
+      const t = cleanHtml(text);
+      const sentences = t.split(/(?<=[.!?])\s+/).filter(Boolean);
+      let out = "";
+      for (const s of sentences) { if ((out + (out? " ":"") + s).length <= maxChars) out += (out? " ":"") + s; else break; }
+      if (!out) out = t.slice(0, maxChars);
+      return out;
+    }
+    function guessThumb(x) {
+      const link = x.link || "";
+      const domain = (()=>{ try { return new URL(link).origin; } catch { return ""; } })();
+      const fromField = x.thumbnail || x.enclosure?.link || x.enclosure?.url || x.enclosure?.thumbnail || x.enclosure;
+      if (fromField && typeof fromField === "string") return fromField;
+      if (x.description) {
+        const m = x.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (m && m[1]) return m[1];
+      }
+      if (domain) return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`;
+      return "";
+    }
+    function dedupe(items) {
+      const seen = new Set();
+      const out = [];
+      for (const it of items) {
+        const key = (it.title||"").trim().toLowerCase() + "|" + normUrl(it.link||"");
+        if (!seen.has(key)) { seen.add(key); out.push(it); }
+      }
+      return out;
+    }
+    async function fetchWithTimeout(url) {
+      const ctrl = new AbortController();
+      const id = setTimeout(() => ctrl.abort(), 12000);
+      try { return await fetch(url, { signal: ctrl.signal }); }
+      finally { clearTimeout(id); }
+    }
+    async function loadFeed(url, retries=2) {
+      try {
+        const r = await fetchWithTimeout(rss2json(url));
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        return (j.items||[]).map(x => ({
+          title: x.title,
+          link: x.link,
+          desc: x.description || x.content || x.content_html || "",
+          pubDate: x.pubDate || x.pub_date || x.date || x.published,
+          source: j.feed?.title || (new URL(url)).hostname,
+          thumb: guessThumb(x)
+        }));
+      } catch (e) {
+        if (retries > 0) { await new Promise(res => setTimeout(res, 1200)); return loadFeed(url, retries-1); }
+        return [];
+      }
+    }
+    async function loadCategory(cat, feeds) {
+      const results = await Promise.allSettled(feeds.map(loadFeed));
+      let merged = [];
+      for (const res of results) if (res.status === "fulfilled") merged = merged.concat(res.value);
+      merged = dedupe(merged).sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).slice(0,FEED_MAX);
+      dataByCategory[cat] = merged;
+      renderList();
+    }
+    function renderTabs() {
+      tabs.innerHTML = "";
+      categories.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.className = "h-12 flex items-center justify-center gap-1 rounded-xl border border-slate-300 dark:border-slate-700 " +
+                      (i===currentCatIndex ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-white/70 dark:bg-slate-900/40");
+        b.textContent = c.replace(' News','');
+        b.addEventListener('click', () => { currentCatIndex = i; renderList(); });
+        tabs.appendChild(b);
+      });
+    }
+    function rowView(it) {
+      const li = document.createElement('li');
+      li.className = "p-3 sm:p-4";
+      const sText = makeSummary(it.desc || "", 600);
+      const showSummary = mode !== 'headlines' && sText.length > 0;
+      const clamped = mode==='summaries';
+      li.innerHTML = `
+        <button class="w-full text-left">
+          <div class="flex items-start gap-3">
+            <img class="thumb flex-none ${!it.thumb ? 'hidden':''}" src="${it.thumb || ''}" alt="" loading="lazy" onerror="this.style.display='none'">
+            <div class="min-w-0 w-full">
+              <div class="text-[15px] font-semibold leading-tight">${it.title}</div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}</div>
+              ${showSummary ? `<div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${clamped?'line-clamp-5':''}">${sText}</div>` : ""}
+              <div class="mt-1 flex gap-3">
+                <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
+                <span class="text-[12px] text-indigo-600 dark:text-indigo-400 underline cursor-pointer" data-action="reader">Read here</span>
+              </div>
+            </div>
+          </div>
+        </button>
+      `;
+      setTimeout(() => {
+        const r = li.querySelector('[data-action="reader"]');
+        if (r) r.addEventListener('click', (e) => { e.stopPropagation(); openReader(it); });
+        li.querySelector('button').addEventListener('click', () => openReader(it));
+      }, 0);
+      return li;
+    }
+    function renderList() {
+      renderTabs();
+      const cat = categories[currentCatIndex];
+      const q = filterBox.value.trim().toLowerCase();
+      const all = (dataByCategory[cat] || []);
+      const filtered = q ? all.filter(it => (it.title+" "+(it.source||"") + " " + (cleanHtml(it.desc||""))).toLowerCase().includes(q)) : all;
+      list.innerHTML = "";
+      if (filtered.length === 0) {
+        const li = document.createElement('li');
+        li.className = "p-4 text-sm text-slate-500"; li.textContent = "No items yet. The RSS proxy may be slow; tap Refresh in 20–30 seconds.";
+        list.appendChild(li);
+      } else {
+        filtered.forEach(it => list.appendChild(rowView(it)));
+      }
+      statusEl.textContent = `${cat} — ${filtered.length} items · Mode: ${mode}`;
+    }
+    function openReader(it) {
+      setMode('reader');
+      readerTitle.textContent = it.title || "";
+      readerMeta.textContent = `${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}`;
+      if (it.thumb) { readerImg.src = it.thumb; readerImg.classList.remove('hidden'); } else readerImg.classList.add('hidden');
+      readerBody.textContent = cleanHtml(it.desc || "") || "This source doesn't include full text in RSS. Tap Open to read more.";
+      readerOpen.href = it.link || "#";
+      document.getElementById('reader').classList.remove('hidden');
+    }
+    document.getElementById('readerBackdrop').addEventListener('click', ()=> document.getElementById('reader').classList.add('hidden'));
+    document.getElementById('readerClose').addEventListener('click', ()=> document.getElementById('reader').classList.add('hidden'));
+
+    // Controls
+    refreshBtn.addEventListener('click', () => {
+      const entries = Object.entries(FEEDS);
+      entries.forEach(([cat, feeds]) => loadCategory(cat, feeds));
+    });
+    let autoTimer = null;
+    const sel = document.getElementById('autoRefresh');
+    sel.addEventListener('change', () => {
+      if (autoTimer) clearInterval(autoTimer);
+      const m = parseInt(sel.value,10); if (m>0) autoTimer = setInterval(()=>refreshBtn.click(), m*60*1000);
+    });
+    filterBox.addEventListener('input', renderList);
+
+    // Initial load
+    (function init(){
+      setMode('summaries');
+      const entries = Object.entries(FEEDS);
+      entries.forEach(([cat, feeds]) => loadCategory(cat, feeds));
+    })();
+  </script>
+</body>
+</html>
+"""
+out = "/mnt/data/morning-news-elite-mobile-weather-pro-plus.html"
+with open(out, "w", encoding="utf-8") as f:
+    f.write(html)
+out
