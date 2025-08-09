@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Morning News — Elite Mobile</title>
+  <title>Morning News — Elite Mobile + Local Weather</title>
   <meta name="color-scheme" content="light dark">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root { --radius: 16px; }
+    :root { --radius: 16px; --tintA: rgba(99, 102, 241, 0.08); --tintB: rgba(14, 165, 233, 0.08); }
     .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-5 { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
@@ -35,12 +35,14 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-    /* iOS safe-area padding for sticky elements */
     .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
     .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
+    /* Sleek, dynamic background controlled by JS (weather-aware) */
+    body.bg-dynamic { transition: background 600ms cubic-bezier(.2,.8,.2,1); background-attachment: fixed; }
+    .card-tint { background-image: linear-gradient(180deg, var(--tintA), var(--tintB)); }
   </style>
 </head>
-<body class="h-full bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+<body class="h-full bg-dynamic text-slate-900 dark:text-slate-100">
   <!-- Top app bar -->
   <header class="sticky top-0 z-40 glass bg-white/85 dark:bg-slate-950/75 border-b border-slate-200 dark:border-slate-800 safe-top">
     <div class="max-w-screen-sm mx-auto px-3 py-2 flex items-center justify-between gap-2">
@@ -56,8 +58,25 @@
         <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
       </div>
     </div>
-    <div class="max-w-screen-sm mx-auto px-3 pb-2">
-      <input id="filterBox" type="search" placeholder="Filter headlines…" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
+    <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
+      <input id="filterBox" type="search" placeholder="Filter headlines…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
+      <button id="locBtn" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍 Locate</button>
+    </div>
+    <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
+      <div id="wxCard" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between">
+        <div class="min-w-0">
+          <div id="wxPlace" class="font-semibold truncate">—</div>
+          <div id="wxDesc" class="text-xs text-slate-600 dark:text-slate-400 truncate">—</div>
+        </div>
+        <div class="text-right">
+          <div id="wxTemp" class="text-lg font-bold">—°</div>
+          <div id="wxMeta" class="text-[11px] text-slate-500 dark:text-slate-400">—</div>
+        </div>
+      </div>
+      <div id="wxStrip" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-2 overflow-x-auto no-scrollbar">
+        <div id="wxRow" class="flex gap-2"></div>
+      </div>
+      <div id="wxHint" class="text-[11px] text-slate-500 dark:text-slate-400">Detecting weather… If prompted, allow location.</div>
     </div>
   </header>
 
@@ -79,19 +98,17 @@
     <div class="mb-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400" id="status">Loading…</div>
 
     <!-- List panel -->
-    <div id="panel" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/70 shadow-card">
+    <div id="panel" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/70 shadow-card card-tint">
       <ol id="list" class="divide-y divide-slate-200 dark:divide-slate-800 overflow-y-auto no-scrollbar" style="max-height: 62dvh;" aria-live="polite"></ol>
     </div>
   </main>
 
-  <!-- Bottom tab bar (mobile-first) -->
+  <!-- Bottom tab bar -->
   <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/90 dark:bg-slate-950/85 border-t border-slate-200 dark:border-slate-800 safe-bottom">
-    <div id="tabs" class="max-w-screen-sm mx-auto px-2 grid grid-cols-5 gap-2 text-[11px]">
-      <!-- buttons injected -->
-    </div>
+    <div id="tabs" class="max-w-screen-sm mx-auto px-2 grid grid-cols-5 gap-2 text-[11px]"></div>
   </nav>
 
-  <!-- Reader sheet (full-screen on mobile) -->
+  <!-- Reader sheet -->
   <div id="reader" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
     <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-card flex flex-col max-w-screen-sm mx-auto">
@@ -111,37 +128,230 @@
   </div>
 
   <script>
-    // --- Config ---
+    // --- Diverse, trusted sources ---
     const FEEDS = {
       "National News": [
         "https://feeds.reuters.com/reuters/topNews",
         "https://feeds.apnews.com/apf-topnews",
-        "https://feeds.npr.org/1001/rss.xml"
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://www.npr.org/sections/news/archive.rss",
+        "https://www.pbs.org/newshour/feeds/rss/headlines",
+        "https://www.theguardian.com/us-news/rss",
+        "https://www.aljazeera.com/xml/rss/all.xml",
+        "https://www.axios.com/feeds/feed.rss",
+        "https://www.politico.com/rss/politics-news.xml"
       ],
       "Ohio News": [
         "https://ohiocapitaljournal.com/feed/",
-        "https://www.cleveland.com/ohio/rss.xml"
+        "https://www.cleveland.com/ohio/rss.xml",
+        "https://www.dispatch.com/arcio/rss/category/news/?outputType=xml",
+        "https://www.cincinnati.com/rss/news"
       ],
       "Columbus News": [
         "https://news.wosu.org/rss",
         "https://www.nbc4i.com/feed/",
+        "https://abc6onyourside.com/rss",
+        "https://www.10tv.com/feeds/rssFeed?section=news",
         "https://www.columbusunderground.com/feed/"
       ],
       "Home Lending News": [
         "https://www.housingwire.com/section/mortgage/feed/",
         "https://www.mortgagenewsdaily.com/rss",
-        "https://www.nationalmortgagenews.com/rss"
+        "https://www.nationalmortgagenews.com/rss",
+        "https://www.fhfa.gov/Feeds/News",
+        "https://www.consumerfinance.gov/about-us/newsroom/feed/"
       ],
       "AI News": [
         "https://www.technologyreview.com/feed/",
         "https://openai.com/blog/rss",
-        "https://ai.googleblog.com/feeds/posts/default?alt=rss"
+        "https://ai.googleblog.com/feeds/posts/default?alt=rss",
+        "https://www.anthropic.com/news/rss.xml",
+        "https://ai.facebook.com/blog/rss/",
+        "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "https://www.techcrunch.com/tag/artificial-intelligence/feed/",
+        "https://arstechnica.com/information-technology/feed/"
       ]
     };
     const MAX_PER_CATEGORY = 50;
-    const VISIBLE_TARGET = 5;
     const FETCH_TIMEOUT_MS = 12000;
-    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+    const CACHE_TTL_MS = 5 * 60 * 1000;
+
+    // --- Weather helpers (Open-Meteo) ---
+    const WX = {
+      palette(code, isDay) {
+        const day = [
+          ["#dfe9f3","#ffffff"],
+          ["#fef9c3","#fde68a"],
+          ["#dbeafe","#bfdbfe"],
+          ["#e2e8f0","#cbd5e1"],
+          ["#e5e7eb","#9ca3af"],
+          ["#c7d2fe","#93c5fd"],
+          ["#e9d5ff","#c4b5fd"],
+          ["#f1f5f9","#e2e8f0"],
+          ["#fde68a","#f59e0b"],
+          ["#fff1f2","#fecdd3"]
+        ];
+        const night = [
+          ["#0f172a","#1e293b"],
+          ["#0b132b","#1c2541"],
+          ["#0b1220","#1f2a44"],
+          ["#0f172a","#334155"],
+          ["#0f172a","#475569"],
+          ["#0b1220","#273f6a"],
+          ["#1d1b3a","#3b2f6b"],
+          ["#111827","#374151"],
+          ["#1f2937","#374151"],
+          ["#1f2937","#334155"]
+        ];
+        const pal = isDay ? day : night;
+        if ([0,1].includes(code)) return pal[1];
+        if ([2,3].includes(code)) return pal[2];
+        if ([45,48].includes(code)) return pal[7];
+        if ([51,53,55].includes(code)) return pal[4];
+        if ([56,57,61,63,65,66,67,80,81,82].includes(code)) return pal[5];
+        if ([71,73,75,77,85,86].includes(code)) return pal[9];
+        if ([95,96,99].includes(code)) return pal[6];
+        return pal[0];
+      },
+      text(code) {
+        if ([0].includes(code)) return "Clear sky";
+        if ([1].includes(code)) return "Mainly clear";
+        if ([2].includes(code)) return "Partly cloudy";
+        if ([3].includes(code)) return "Overcast";
+        if ([45,48].includes(code)) return "Fog";
+        if ([51,53,55].includes(code)) return "Drizzle";
+        if ([56,57].includes(code)) return "Freezing drizzle";
+        if ([61,63,65].includes(code)) return "Rain";
+        if ([66,67].includes(code)) return "Freezing rain";
+        if ([71,73,75].includes(code)) return "Snowfall";
+        if ([77].includes(code)) return "Snow grains";
+        if ([80,81,82].includes(code)) return "Rain showers";
+        if ([85,86].includes(code)) return "Snow showers";
+        if ([95].includes(code)) return "Thunderstorm";
+        if ([96,99].includes(code)) return "Thunderstorm w/ hail";
+        return "Weather";
+      },
+      emoji(code, isDay) {
+        const sun="☀️", moon="🌙", cloud="☁️", rain="🌧️", th="⛈️", snow="❄️", fog="🌫️";
+        if (code===0) return isDay?sun:moon;
+        if (code===1) return isDay?sun:moon;
+        if (code===2) return "⛅";
+        if (code===3) return cloud;
+        if ([45,48].includes(code)) return fog;
+        if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return rain;
+        if ([71,73,75,77,85,86].includes(code)) return snow;
+        if ([95,96,99].includes(code)) return th;
+        return "🌤️";
+      }
+    };
+    function hexToRgba(hex, a) {
+      const h = hex.replace('#','');
+      const bigint = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+    function setDynamicBackground(code, isDay) {
+      const [c1, c2] = WX.palette(code, !!isDay);
+      document.body.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+      document.documentElement.style.setProperty('--tintA', `${hexToRgba(c1, 0.10)}`);
+      document.documentElement.style.setProperty('--tintB', `${hexToRgba(c2, 0.10)}`);
+    }
+    async function fetchJSON(url) {
+      const ctrl = new AbortController();
+      const id = setTimeout(()=>ctrl.abort(), 12000);
+      try { const r = await fetch(url, {signal: ctrl.signal}); if (!r.ok) throw new Error("HTTP "+r.status); return r.json(); }
+      finally { clearTimeout(id); }
+    }
+    async function reverseGeocode(lat, lon) {
+      try {
+        const j = await fetchJSON(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);
+        const p = j?.results?.[0];
+        if (!p) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+        const parts = [p.name, p.admin1, p.country].filter(Boolean);
+        return parts.join(", ");
+      } catch { return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
+    }
+    function chip(prob) {
+      if (prob >= 70) return "bg-sky-600 text-white";
+      if (prob >= 40) return "bg-sky-300 text-slate-800";
+      if (prob > 0) return "bg-sky-100 text-slate-800";
+      return "bg-slate-100 text-slate-600";
+    }
+    async function loadWeather(lat, lon) {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,precipitation_probability,weathercode,is_day&timezone=auto`;
+        const j = await fetchJSON(url);
+        const cur = j.current_weather;
+        const place = await reverseGeocode(lat, lon);
+        const code = cur.weathercode ?? 2;
+        const isDay = cur.is_day ?? 1;
+        const emoji = WX.emoji(code, isDay);
+        wxPlace.textContent = place;
+        wxDesc.textContent = `${emoji} ${WX.text(code)} · Wind ${Math.round(cur.windspeed)} km/h`;
+        wxTemp.textContent = `${Math.round(cur.temperature)}°`;
+        wxMeta.textContent = `As of ${new Date().toLocaleTimeString()}`;
+        wxCard.classList.remove("hidden");
+        wxHint.classList.add("hidden");
+        setDynamicBackground(code, isDay);
+
+        // Hourly strip (next 12h)
+        const hours = j.hourly.time;
+        const temps = j.hourly.temperature_2m;
+        const probs = j.hourly.precipitation_probability || [];
+        const wxcodes = j.hourly.weathercode || [];
+        const isdayArr = j.hourly.is_day || [];
+        const now = Date.now();
+        const next = [];
+        for (let i=0;i<hours.length;i++) {
+          const ts = new Date(hours[i]).getTime();
+          if (ts >= now && next.length < 12) {
+            next.push({ ts, temp: Math.round(temps[i]), prob: probs[i] ?? 0, code: wxcodes[i] ?? code, isDay: isdayArr[i] ?? isDay });
+          }
+        }
+        wxRow.innerHTML = "";
+        next.forEach(h => {
+          const el = document.createElement('div');
+          el.className = `min-w-[54px] rounded-lg p-2 flex flex-col items-center justify-center border border-slate-200 dark:border-slate-700 ${chip(h.prob)}`;
+          el.innerHTML = `
+            <div class="text-[11px] opacity-80">${new Date(h.ts).toLocaleTimeString([], {hour:'numeric'})}</div>
+            <div class="text-base font-bold leading-tight">${h.temp}°</div>
+            <div class="text-[14px]">${WX.emoji(h.code, h.isDay)}</div>
+            <div class="text-[10px] opacity-80">${h.prob||0}%</div>
+          `;
+          wxRow.appendChild(el);
+        });
+        wxStrip.classList.remove("hidden");
+        localStorage.setItem("wx", JSON.stringify({lat, lon, cur, place, t: Date.now(), next}));
+      } catch (e) {
+        wxDesc.textContent = "Weather unavailable right now.";
+        wxCard.classList.remove("hidden");
+      }
+    }
+    function getLocationAndLoad() {
+      if (!navigator.geolocation) {
+        wxHint.textContent = "Geolocation not supported.";
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords || {};
+        if (typeof lat === "number" && typeof lon === "number") {
+          await loadWeather(lat, lon);
+        }
+      }, (err) => {
+        wxHint.textContent = "Location permission denied. Tap 📍 to retry or enable in Settings.";
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+    }
+    const wxCard = document.getElementById('wxCard');
+    const wxPlace = document.getElementById('wxPlace');
+    const wxDesc = document.getElementById('wxDesc');
+    const wxTemp = document.getElementById('wxTemp');
+    const wxMeta = document.getElementById('wxMeta');
+    const wxHint = document.getElementById('wxHint');
+    const wxStrip = document.getElementById('wxStrip');
+    const wxRow = document.getElementById('wxRow');
+    document.getElementById('locBtn').addEventListener("click", getLocationAndLoad);
 
     // --- Theme ---
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -152,7 +362,7 @@
       localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
     });
 
-    // --- Helpers ---
+    // --- News helpers ---
     const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
     const timeAgo = (dateStr) => {
       const d = new Date(dateStr);
@@ -204,7 +414,7 @@
     let dataByCategory = {};
     let currentCatIndex = 0;
     const categories = Object.keys(FEEDS);
-    let mode = 'summaries'; // default
+    let mode = 'summaries';
     let expandAll = false;
 
     // --- UI refs ---
@@ -271,7 +481,6 @@
           </div>
         </button>
       `;
-      // Tappable reader
       setTimeout(() => {
         const r = li.querySelector('[data-action="reader"]');
         if (r) r.addEventListener('click', (e) => { e.stopPropagation(); openReader(it); });
@@ -280,10 +489,7 @@
       return li;
     }
 
-    function fixVisibleHeight() {
-      // Mobile: keep list within viewport unit height
-      list.style.maxHeight = "62dvh";
-    }
+    function fixVisibleHeight() { list.style.maxHeight = "62dvh"; }
 
     function renderList() {
       renderTabs();
@@ -377,11 +583,11 @@
     // Init
     (function init(){
       renderTabs();
-      // Prepaint from cache
       Object.keys(FEEDS).forEach(cat => { const c = loadCache(cat); if (c) dataByCategory[cat] = c; });
-      setMode('summaries'); // default
+      setMode('summaries');
       renderList();
       loadAll();
+      getLocationAndLoad(); // weather on boot
       window.addEventListener('resize', fixVisibleHeight);
     })();
   </script>
