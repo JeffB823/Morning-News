@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Morning News — Elite Mobile</title>
+  <meta name="color-scheme" content="light dark">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] },
+          boxShadow: {
+            subtle: '0 4px 16px rgba(2,6,23,.06), 0 1px 4px rgba(2,6,23,.05)',
+            card: '0 8px 28px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.06)'
+          }
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --radius: 16px; }
+    .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-5 { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
+    @media (prefers-color-scheme: dark) { .thumb { background: #0b1220; } }
+    .row.active { outline: 2px solid rgb(99 102 241 / .85); outline-offset: 2px; border-radius: 12px; }
+    .glass { backdrop-filter: saturate(140%) blur(8px); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    /* iOS safe-area padding for sticky elements */
+    .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+    .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
+  </style>
+</head>
+<body class="h-full bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <!-- Top app bar -->
+  <header class="sticky top-0 z-40 glass bg-white/85 dark:bg-slate-950/75 border-b border-slate-200 dark:border-slate-800 safe-top">
+    <div class="max-w-screen-sm mx-auto px-3 py-2 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 shadow-subtle" aria-hidden="true"></div>
+        <div class="min-w-0">
+          <h1 class="text-base font-extrabold tracking-tight leading-tight truncate">Morning News</h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate">National · Ohio · Columbus · Home Lending · AI</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="themeBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Theme</button>
+        <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
+      </div>
+    </div>
+    <div class="max-w-screen-sm mx-auto px-3 pb-2">
+      <input id="filterBox" type="search" placeholder="Filter headlines…" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
+    </div>
+  </header>
+
+  <main class="max-w-screen-sm mx-auto px-3 pt-3 pb-24">
+    <!-- Mode & status -->
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <div class="inline-flex rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+        <button id="modeHeadlines" class="px-3 py-1.5 text-xs bg-slate-900 text-white dark:bg-white dark:text-slate-900">Headlines</button>
+        <button id="modeSummaries" class="px-3 py-1.5 text-xs">Summaries</button>
+        <button id="modeReader" class="px-3 py-1.5 text-xs">Reader</button>
+      </div>
+      <select id="autoRefresh" class="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">
+        <option value="0">Auto</option>
+        <option value="5">5m</option>
+        <option value="10" selected>10m</option>
+        <option value="30">30m</option>
+      </select>
+    </div>
+    <div class="mb-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400" id="status">Loading…</div>
+
+    <!-- List panel -->
+    <div id="panel" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/70 shadow-card">
+      <ol id="list" class="divide-y divide-slate-200 dark:divide-slate-800 overflow-y-auto no-scrollbar" style="max-height: 62dvh;" aria-live="polite"></ol>
+    </div>
+  </main>
+
+  <!-- Bottom tab bar (mobile-first) -->
+  <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/90 dark:bg-slate-950/85 border-t border-slate-200 dark:border-slate-800 safe-bottom">
+    <div id="tabs" class="max-w-screen-sm mx-auto px-2 grid grid-cols-5 gap-2 text-[11px]">
+      <!-- buttons injected -->
+    </div>
+  </nav>
+
+  <!-- Reader sheet (full-screen on mobile) -->
+  <div id="reader" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
+    <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-card flex flex-col max-w-screen-sm mx-auto">
+      <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 id="readerTitle" class="text-base font-bold leading-tight line-clamp-2"></h2>
+          <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
+          <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
+        </div>
+      </div>
+      <img id="readerImg" class="m-3 rounded-xl max-h-48 object-cover hidden" alt="">
+      <div id="readerBody" class="prose prose-sm dark:prose-invert max-w-none px-3 pb-3 overflow-y-auto" style="max-height: 60dvh;"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Config ---
+    const FEEDS = {
+      "National News": [
+        "https://feeds.reuters.com/reuters/topNews",
+        "https://feeds.apnews.com/apf-topnews",
+        "https://feeds.npr.org/1001/rss.xml"
+      ],
+      "Ohio News": [
+        "https://ohiocapitaljournal.com/feed/",
+        "https://www.cleveland.com/ohio/rss.xml"
+      ],
+      "Columbus News": [
+        "https://news.wosu.org/rss",
+        "https://www.nbc4i.com/feed/",
+        "https://www.columbusunderground.com/feed/"
+      ],
+      "Home Lending News": [
+        "https://www.housingwire.com/section/mortgage/feed/",
+        "https://www.mortgagenewsdaily.com/rss",
+        "https://www.nationalmortgagenews.com/rss"
+      ],
+      "AI News": [
+        "https://www.technologyreview.com/feed/",
+        "https://openai.com/blog/rss",
+        "https://ai.googleblog.com/feeds/posts/default?alt=rss"
+      ]
+    };
+    const MAX_PER_CATEGORY = 50;
+    const VISIBLE_TARGET = 5;
+    const FETCH_TIMEOUT_MS = 12000;
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+    // --- Theme ---
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedTheme = localStorage.getItem('theme');
+    if ((storedTheme === 'dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    // --- Helpers ---
+    const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+    const timeAgo = (dateStr) => {
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "";
+      const s = Math.floor((Date.now() - d.getTime()) / 1000);
+      const pairs = [["yr",31536000],["mo",2592000],["d",86400],["h",3600],["m",60],["s",1]];
+      for (const [n,sec] of pairs) { const v = Math.floor(s/sec); if (v>=1) return `${v}${n}`; }
+      return "now";
+    };
+    const normUrl = (url) => { try{ const u=new URL(url); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","utm_id"].forEach(p=>u.searchParams.delete(p)); return u.toString(); } catch { return url; } };
+    function cleanHtml(html) { return (html||"").replace(/<script[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style[^>]*>[\s\S]*?<\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
+    function makeSummary(text, maxChars=600) {
+      const t = cleanHtml(text);
+      const sentences = t.split(/(?<=[.!?])\s+/).filter(Boolean);
+      let out = "";
+      for (const s of sentences) { if ((out + (out? " ":"") + s).length <= maxChars) out += (out? " ":"") + s; else break; }
+      if (!out) out = t.slice(0, maxChars);
+      return out;
+    }
+    function guessThumb(x) {
+      const link = x.link || "";
+      const domain = (()=>{ try { return new URL(link).origin; } catch { return ""; } })();
+      const fromField = x.thumbnail || x.enclosure?.link || x.enclosure?.url || x.enclosure?.thumbnail || x.enclosure;
+      if (fromField && typeof fromField === "string") return fromField;
+      if (x.description) {
+        const m = x.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (m && m[1]) return m[1];
+      }
+      if (domain) return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`;
+      return "";
+    }
+    function dedupe(items) {
+      const seen = new Set();
+      const out = [];
+      for (const it of items) {
+        const key = (it.title||"").trim().toLowerCase() + "|" + normUrl(it.link||"");
+        if (!seen.has(key)) { seen.add(key); out.push(it); }
+      }
+      return out;
+    }
+    async function fetchWithTimeout(url) {
+      const ctrl = new AbortController();
+      const id = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+      try { return await fetch(url, { signal: ctrl.signal }); }
+      finally { clearTimeout(id); }
+    }
+
+    // --- State ---
+    let dataByCategory = {};
+    let currentCatIndex = 0;
+    const categories = Object.keys(FEEDS);
+    let mode = 'summaries'; // default
+    let expandAll = false;
+
+    // --- UI refs ---
+    const tabs = document.getElementById('tabs');
+    const list = document.getElementById('list');
+    const statusEl = document.getElementById('status');
+    const filterBox = document.getElementById('filterBox');
+    const reader = document.getElementById('reader');
+    const readerBackdrop = document.getElementById('readerBackdrop');
+    const readerTitle = document.getElementById('readerTitle');
+    const readerMeta = document.getElementById('readerMeta');
+    const readerImg = document.getElementById('readerImg');
+    const readerBody = document.getElementById('readerBody');
+    const readerOpen = document.getElementById('readerOpen');
+    const readerClose = document.getElementById('readerClose');
+    const modeHeadlines = document.getElementById('modeHeadlines');
+    const modeSummaries = document.getElementById('modeSummaries');
+    const modeReader = document.getElementById('modeReader');
+
+    function setMode(m) {
+      mode = m;
+      [modeHeadlines, modeSummaries, modeReader].forEach(btn => btn.classList.remove('bg-slate-900','text-white','dark:bg-white','dark:text-slate-900'));
+      const btn = m==='headlines'?modeHeadlines : m==='summaries'?modeSummaries : modeReader;
+      btn.classList.add('bg-slate-900','text-white','dark:bg-white','dark:text-slate-900');
+      if (m !== 'reader') reader.classList.add('hidden');
+      renderList();
+    }
+    modeHeadlines.addEventListener('click', ()=>setMode('headlines'));
+    modeSummaries.addEventListener('click', ()=>setMode('summaries'));
+    modeReader.addEventListener('click', ()=>setMode('reader'));
+
+    // Bottom tabs
+    function renderTabs() {
+      tabs.innerHTML = "";
+      categories.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.className = "h-12 flex items-center justify-center gap-1 rounded-xl border border-slate-300 dark:border-slate-700 " +
+                      (i===currentCatIndex ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-white/70 dark:bg-slate-900/40");
+        b.textContent = c.replace(' News','');
+        b.addEventListener('click', () => { currentCatIndex = i; renderList(); });
+        tabs.appendChild(b);
+      });
+    }
+
+    function rowView(it) {
+      const li = document.createElement('li');
+      li.className = "p-3 sm:p-4";
+      const sText = makeSummary(it.desc || "", 600);
+      const showSummary = mode !== 'headlines' && sText.length > 0;
+      const clamped = !expandAll && mode==='summaries';
+      li.innerHTML = `
+        <button class="w-full text-left">
+          <div class="flex items-start gap-3">
+            <img class="thumb flex-none ${!it.thumb ? 'hidden':''}" src="${it.thumb || ''}" alt="" loading="lazy" onerror="this.style.display='none'">
+            <div class="min-w-0 w-full">
+              <div class="text-[15px] font-semibold leading-tight">${it.title}</div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}</div>
+              ${showSummary ? `<div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${clamped?'line-clamp-5':''}">${sText}</div>` : ""}
+              <div class="mt-1 flex gap-3">
+                <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
+                <span class="text-[12px] text-indigo-600 dark:text-indigo-400 underline cursor-pointer" data-action="reader">Read here</span>
+              </div>
+            </div>
+          </div>
+        </button>
+      `;
+      // Tappable reader
+      setTimeout(() => {
+        const r = li.querySelector('[data-action="reader"]');
+        if (r) r.addEventListener('click', (e) => { e.stopPropagation(); openReader(it); });
+        li.querySelector('button').addEventListener('click', () => openReader(it));
+      }, 0);
+      return li;
+    }
+
+    function fixVisibleHeight() {
+      // Mobile: keep list within viewport unit height
+      list.style.maxHeight = "62dvh";
+    }
+
+    function renderList() {
+      renderTabs();
+      const cat = categories[currentCatIndex];
+      const q = filterBox.value.trim().toLowerCase();
+      const all = (dataByCategory[cat] || []);
+      const filtered = q ? all.filter(it => (it.title+" "+(it.source||"") + " " + (cleanHtml(it.desc||""))).toLowerCase().includes(q)) : all;
+      list.innerHTML = "";
+      if (filtered.length === 0) {
+        const li = document.createElement('li');
+        li.className = "p-4 text-sm text-slate-500"; li.textContent = "No items yet. The RSS proxy may be slow; tap Refresh in 20–30 seconds.";
+        list.appendChild(li);
+      } else {
+        filtered.forEach(it => list.appendChild(rowView(it)));
+      }
+      statusEl.textContent = `${cat} — ${filtered.length} items · Mode: ${mode}`;
+      fixVisibleHeight();
+    }
+
+    // Reader
+    function openReader(it) {
+      setMode('reader');
+      readerTitle.textContent = it.title || "";
+      readerMeta.textContent = `${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}`;
+      if (it.thumb) { readerImg.src = it.thumb; readerImg.classList.remove('hidden'); } else readerImg.classList.add('hidden');
+      readerBody.textContent = cleanHtml(it.desc || "") || "This source doesn't include full text in RSS. Tap Open to read more.";
+      readerOpen.href = it.link || "#";
+      reader.classList.remove('hidden');
+    }
+    readerBackdrop.addEventListener('click', ()=> reader.classList.add('hidden'));
+    readerClose.addEventListener('click', ()=> reader.classList.add('hidden'));
+
+    // Cache & load
+    function cacheKey(cat) { return `news-cache::${cat}`; }
+    function saveCache(cat, items) { localStorage.setItem(cacheKey(cat), JSON.stringify({ t: Date.now(), items })); }
+    function loadCache(cat) {
+      try { const raw = localStorage.getItem(cacheKey(cat)); if (!raw) return null;
+        const { t, items } = JSON.parse(raw); if (!t || !items) return null;
+        if (Date.now() - t > CACHE_TTL_MS) return null; return items;
+      } catch { return null; }
+    }
+
+    async function loadFeed(url, retries=2) {
+      try {
+        const r = await fetchWithTimeout(rss2json(url));
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        return (j.items||[]).map(x => ({
+          title: x.title,
+          link: x.link,
+          desc: x.description || x.content || x.content_html || "",
+          pubDate: x.pubDate || x.pub_date || x.date || x.published,
+          source: j.feed?.title || (new URL(url)).hostname,
+          thumb: guessThumb(x)
+        }));
+      } catch (e) {
+        if (retries > 0) { await new Promise(res => setTimeout(res, 1200)); return loadFeed(url, retries-1); }
+        console.warn("Feed failed:", url, e); return [];
+      }
+    }
+
+    async function loadCategory(cat, feeds) {
+      const cached = loadCache(cat);
+      if (cached) { dataByCategory[cat] = cached; renderList(); }
+      const results = await Promise.allSettled(feeds.map(loadFeed));
+      let merged = [];
+      for (const res of results) if (res.status === "fulfilled") merged = merged.concat(res.value);
+      merged = dedupe(merged).sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).slice(0,MAX_PER_CATEGORY);
+      dataByCategory[cat] = merged; saveCache(cat, merged); renderList();
+    }
+
+    async function loadAll() {
+      const entries = Object.entries(FEEDS);
+      for (let i=0;i<entries.length;i++) {
+        const [cat, feeds] = entries[i];
+        await loadCategory(cat, feeds);
+      }
+      document.title = `Morning News — ${new Date().toLocaleTimeString()}`;
+    }
+
+    // Controls
+    document.getElementById('refreshBtn').addEventListener('click', loadAll);
+    let autoTimer = null;
+    const sel = document.getElementById('autoRefresh');
+    sel.addEventListener('change', () => {
+      if (autoTimer) clearInterval(autoTimer);
+      const m = parseInt(sel.value,10); if (m>0) autoTimer = setInterval(loadAll, m*60*1000);
+    });
+    filterBox.addEventListener('input', renderList);
+
+    // Init
+    (function init(){
+      renderTabs();
+      // Prepaint from cache
+      Object.keys(FEEDS).forEach(cat => { const c = loadCache(cat); if (c) dataByCategory[cat] = c; });
+      setMode('summaries'); // default
+      renderList();
+      loadAll();
+      window.addEventListener('resize', fixVisibleHeight);
+    })();
+  </script>
+</body>
+</html>
