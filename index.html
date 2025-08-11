@@ -1,351 +1,590 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Jeff's News </title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Morning News — Ultimate</title>
   <meta name="color-scheme" content="light dark">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] } } }, darkMode: 'class' }
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] },
+          boxShadow: { glass: '0 8px 24px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.06)' }
+        }
+      },
+      darkMode: 'class'
+    }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    .thumb{width:60px;height:60px;object-fit:cover;border-radius:12px;background:#e2e8f0}
-    @media (prefers-color-scheme:dark){.thumb{background:#0b1220}}
-    .line-5{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
-    .glass{backdrop-filter:saturate(140%) blur(8px)}
+    :root { --tA: rgba(99,102,241,.06); --tB: rgba(14,165,233,.06); }
+    body { background: linear-gradient(135deg,#f8fafc,#eef2ff); background-attachment: fixed; transition: background 600ms cubic-bezier(.2,.8,.2,1); }
+    .glass { backdrop-filter: saturate(140%) blur(10px); }
+    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
+    @media (prefers-color-scheme: dark) { .thumb { background:#0b1220; } body { background: linear-gradient(135deg,#0b1220,#111827); } }
+    .line-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .line-5 { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+    .line-7 { display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden; }
     .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-    body{transition:background .6s cubic-bezier(.2,.8,.2,1);background-attachment:fixed}
+    .safe-top{ padding-top: calc(env(safe-area-inset-top) + 6px); }
+    .safe-bottom{ padding-bottom: calc(env(safe-area-inset-bottom) + 6px); }
+    .skeleton { animation: pulse 1.2s ease-in-out infinite; background: linear-gradient(90deg, rgba(148,163,184,.15), rgba(148,163,184,.05), rgba(148,163,184,.15)); background-size: 200% 100%; }
+    @keyframes pulse { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   </style>
 </head>
-<body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-<header class="sticky top-0 z-40 glass bg-white/85 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800">
-  <div class="max-w-screen-sm mx-auto px-3 py-2 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2">
-      <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500"></div>
-      <div>
-        <h1 class="text-base font-extrabold">Morning News</h1>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Hardened loader · Mobile-first</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button id="themeBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Theme</button>
-      <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
-    </div>
-  </div>
-
-  <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
-    <input id="q" type="search" placeholder="Search…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
-    <button id="locBtn" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍</button>
-    <select id="modeSel" class="px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">
-      <option value="headlines">Headlines</option>
-      <option value="summaries" selected>Summaries</option>
-      <option value="reader">Reader</option>
-    </select>
-  </div>
-
-  <div class="max-w-screen-sm mx-auto px-3 pb-2 overflow-x-auto no-scrollbar">
-    <div id="chips" class="flex gap-2"></div>
-  </div>
-
-  <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
-    <div id="wxCard" class="hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between">
-      <div class="min-w-0">
-        <div id="wxPlace" class="font-semibold truncate">—</div>
-        <div id="wxDesc" class="text-xs text-slate-600 dark:text-slate-400 truncate">—</div>
-      </div>
-      <div class="text-right">
-        <div id="wxTemp" class="text-lg font-bold">—°F</div>
-        <div id="wxMeta" class="text-[11px] text-slate-500 dark:text-slate-400">—</div>
-      </div>
-    </div>
-    <div id="wxHint" class="text-[11px] text-slate-500 dark:text-slate-400">Weather: tap 📍 and allow location.</div>
-  </div>
-</header>
-
-<main class="max-w-screen-sm mx-auto px-3 pt-3 pb-24">
-  <div id="status" class="mb-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400">Loading…</div>
-  <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/70">
-    <ol id="list" class="divide-y divide-slate-200 dark:divide-slate-800" aria-live="polite"></ol>
-    <button id="moreBtn" class="w-full py-3 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Load more</button>
-  </div>
-</main>
-
-<!-- Reader -->
-<div id="reader" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
-  <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-card flex flex-col max-w-screen-sm mx-auto">
-    <div class="p-3 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h2 id="readerTitle" class="text-base font-bold leading-tight"></h2>
-        <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
+<body class="h-full text-slate-900 dark:text-slate-100">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass bg-white/80 dark:bg-slate-950/75 border-b border-slate-200/70 dark:border-slate-800/70 safe-top">
+    <div class="max-w-screen-sm mx-auto px-3 pt-1 pb-2 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 shadow" aria-hidden="true"></div>
+        <div class="min-w-0">
+          <h1 class="text-base font-extrabold leading-tight truncate">Morning News</h1>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate">Top · National · Ohio · Columbus · Home Lending · AI</p>
+        </div>
       </div>
       <div class="flex items-center gap-2">
-        <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
-        <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
+        <button id="themeBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Theme</button>
+        <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
       </div>
     </div>
-    <div id="readerBody" class="prose prose-sm dark:prose-invert max-w-none px-3 pb-3 overflow-y-auto" style="max-height:60dvh;"></div>
+
+    <!-- Search + Mode + Location -->
+    <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
+      <input id="filterBox" type="search" placeholder="Search…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
+      <button id="locBtn" title="Use my location" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍</button>
+      <select id="modeSel" class="px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">
+        <option value="headlines">Headlines</option>
+        <option value="summaries" selected>Summaries</option>
+        <option value="reader">Reader</option>
+      </select>
+    </div>
+
+    <!-- Category chips -->
+    <div class="max-w-screen-sm mx-auto px-3 pb-2 overflow-x-auto no-scrollbar">
+      <div id="chips" class="flex gap-2"></div>
+    </div>
+
+    <!-- Weather -->
+    <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
+      <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
+        <div class="min-w-0">
+          <div id="wxPlace" class="font-semibold truncate">—</div>
+          <div id="wxDesc" class="text-xs text-slate-600 dark:text-slate-400 truncate">—</div>
+        </div>
+        <div class="text-right">
+          <div id="wxTemp" class="text-lg font-bold">—°F</div>
+          <div id="wxMeta" class="text-[11px] text-slate-500 dark:text-slate-400">—</div>
+        </div>
+      </div>
+      <div id="wxHint" class="text-[11px] text-slate-500 dark:text-slate-400">Weather: tap 📍 to allow location or set a city/ZIP.</div>
+    </div>
+  </header>
+
+  <!-- Dashboard -->
+  <section class="max-w-screen-sm mx-auto px-3 pt-2 pb-1 grid grid-cols-1 gap-2">
+    <!-- Need to know -->
+    <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Need to know</div>
+      <ul id="needToKnow" class="list-disc pl-5 text-[13px] text-slate-800 dark:text-slate-200 space-y-1">
+        <li class="opacity-60">Loading top stories…</li>
+      </ul>
+    </div>
+    <!-- Markets + Quote -->
+    <div class="grid grid-cols-3 gap-2">
+      <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
+        <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Markets</div>
+        <div id="mkSP" class="text-[13px]">S&P 500: —</div>
+        <div id="mkDJI" class="text-[13px]">Dow: —</div>
+        <div id="mkBTC" class="text-[13px]">BTC: —</div>
+      </div>
+      <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass col-span-2">
+        <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Quote of the day</div>
+        <div id="qod" class="text-[13px] italic text-slate-800 dark:text-slate-200">—</div>
+      </div>
+    </div>
+    <!-- Sunrise/Sunset -->
+    <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Sunrise & sunset</div>
+      <div id="sunTimes" class="text-[13px] text-slate-800 dark:text-slate-200">—</div>
+    </div>
+  </section>
+
+  <!-- Main -->
+  <main class="max-w-screen-sm mx-auto px-3 pt-2 pb-24">
+    <div id="status" class="mb-2 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400">Loading…</div>
+    <div id="panel" class="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 shadow-glass">
+      <ol id="list" class="divide-y divide-slate-200/70 dark:divide-slate-800/70" aria-live="polite"></ol>
+      <button id="moreBtn" class="w-full py-3 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Load more</button>
+    </div>
+  </main>
+
+  <!-- Bottom dock -->
+  <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
+    <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
+      <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
+      <button id="dockNat"  class="flex flex-col items-center gap-1 py-1">🌎<span>National</span></button>
+      <button id="dockOhio" class="flex flex-col items-center gap-1 py-1">🗺️<span>Ohio</span></button>
+      <button id="dockLocal"class="flex flex-col items-center gap-1 py-1">📍<span>Columbus</span></button>
+      <button id="dockHL"   class="flex flex-col items-center gap-1 py-1">🏡<span>Lending</span></button>
+      <button id="dockAI"   class="flex flex-col items-center gap-1 py-1">🤖<span>AI</span></button>
+    </div>
+  </nav>
+
+  <!-- Bookmarks FAB -->
+  <button id="bmBtn" title="Bookmarks" class="fixed bottom-20 right-4 z-50 px-3 py-2 rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/80 text-xs shadow-glass">⭐︎ Bookmarks</button>
+
+  <!-- Reader -->
+  <div id="reader" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
+    <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 shadow-glass flex flex-col max-w-screen-sm mx-auto">
+      <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 id="readerTitle" class="text-base font-bold leading-tight"></h2>
+          <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="readerStar" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">⭐︎</button>
+          <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
+          <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
+        </div>
+      </div>
+      <img id="readerImg" class="m-3 rounded-xl max-h-48 object-cover hidden" alt="">
+      <div id="readerBody" class="prose prose-sm dark:prose-invert max-w-none px-3 pb-3 overflow-y-auto" style="max-height: 60dvh;"></div>
+    </div>
   </div>
-</div>
 
-<script>
-const FEEDS = {
-  "Top": [
-    "https://feeds.reuters.com/reuters/topNews",
-    "https://feeds.apnews.com/apf-topnews",
-    "https://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.npr.org/sections/news/archive.rss",
-    "https://www.pbs.org/newshour/feeds/rss/headlines",
-    "https://www.theguardian.com/us-news/rss"
-  ],
-  "Ohio": [
-    "https://ohiocapitaljournal.com/feed/",
-    "https://www.cleveland.com/ohio/rss.xml",
-    "https://www.dispatch.com/arcio/rss/category/news/?outputType=xml",
-    "https://www.cincinnati.com/rss/news"
-  ],
-  "Columbus": [
-    "https://news.wosu.org/rss",
-    "https://www.nbc4i.com/feed/",
-    "https://abc6onyourside.com/rss",
-    "https://www.10tv.com/feeds/rssFeed?section=news",
-    "https://www.columbusunderground.com/feed/"
-  ],
-  "Home Lending": [
-    "https://www.housingwire.com/section/mortgage/feed/",
-    "https://www.mortgagenewsdaily.com/rss",
-    "https://www.nationalmortgagenews.com/rss",
-    "https://www.fhfa.gov/Feeds/News"
-  ],
-  "AI": [
-    "https://www.technologyreview.com/feed/",
-    "https://openai.com/blog/rss",
-    "https://ai.googleblog.com/feeds/posts/default?alt=rss",
-    "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-    "https://arstechnica.com/information-technology/feed/"
-  ]
-};
-const ORDER = Object.keys(FEEDS);
-const PAGE_SIZE = 5;
-const TIMEOUT = 12000;
-
-const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
-const allorigins = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
-const corsgit    = (u) => `https://cors.isomorphic-git.org/${u}`;
-
-function log(){ try { console.log.apply(console, arguments); } catch(e){} }
-
-function cleanHtml(html){ return (html||"").replace(/<script[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style[^>]*>[\s\S]*?<\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
-function summarize(html, max=600){
-  const t = cleanHtml(html);
-  const parts = t.split(/(?<=[.!?])\s+/).filter(Boolean);
-  let out=""; for (const s of parts) { if ((out+(out?" ":"")+s).length<=max) out+=(out?" ":"")+s; else break; }
-  return out || t.slice(0,max);
-}
-function timeAgo(s){ const d=new Date(s); if(isNaN(d)) return ""; const sec=Math.floor((Date.now()-d)/1000); const pairs=[["yr",31536000],["mo",2592000],["d",86400],["h",3600],["m",60],["s",1]]; for(const [n,v] of pairs){ const k=Math.floor(sec/v); if(k>=1) return k+n; } return "now"; }
-function guessThumb(item){
-  const link=item.link||""; let domain=""; try{domain=new URL(link).origin;}catch{}
-  const f=item.thumbnail || item.enclosure?.url || item.enclosure?.link || item.enclosure || "";
-  if (typeof f==="string" && f) return f;
-  if (item.description){ const m = item.description.match(/<img[^>]+src=["']([^"']+)["']/i); if (m && m[1]) return m[1]; }
-  return domain?`https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`:"";
-}
-
-function withTimeout(promise, ms=TIMEOUT){ const ctrl = new AbortController(); const t=setTimeout(()=>ctrl.abort(),ms); return fetch(promise, {signal: ctrl.signal}).finally(()=>clearTimeout(t)); }
-
-async function fetchText(url){
-  const ctrl=new AbortController(); const id=setTimeout(()=>ctrl.abort(), TIMEOUT);
-  try{ const r=await fetch(url,{signal:ctrl.signal}); if(!r.ok) throw new Error("HTTP "+r.status); return await r.text(); }
-  finally{ clearTimeout(id); }
-}
-
-async function loadFeedJson(url){
-  const r=await fetch(rss2json(url));
-  if(!r.ok) throw new Error("rss2json "+r.status);
-  const j=await r.json();
-  return (j.items||[]).map(x=>({title:x.title, link:x.link, description:x.description||x.content||x.content_html||"", pubDate:x.pubDate||x.pub_date||x.date||x.published, source:j.feed?.title||(new URL(url)).hostname, thumb:guessThumb(x)}));
-}
-async function loadFeedXml(url, proxy){
-  const txt = await fetchText(proxy(url));
-  const doc = new DOMParser().parseFromString(txt, "application/xml");
-  const nodes = Array.from(doc.querySelectorAll("item,entry"));
-  return nodes.map(n=>{
-    const g = sel => n.querySelector(sel)?.textContent || "";
-    const linkNode = n.querySelector("link");
-    let link = g("link");
-    if (linkNode && linkNode.getAttribute("href")) link = linkNode.getAttribute("href");
-    const enclosure = n.querySelector("enclosure");
-    const thumb = enclosure?.getAttribute("url") || "";
-    return { title:g("title"), link, description:g("description")||g("content")||g("summary"), pubDate:g("pubDate")||g("updated")||g("published"), source: (doc.querySelector("channel>title")?.textContent) || (new URL(url)).hostname, thumb };
-  });
-}
-async function loadFeed(url){
-  // try JSON API, then AllOrigins XML, then cors.isomorphic-git XML
-  try { return await loadFeedJson(url); }
-  catch(e1){ log("rss2json failed", url, e1); try { return await loadFeedXml(url, allorigins); }
-  catch(e2){ log("allorigins failed", url, e2); try { return await loadFeedXml(url, corsgit); }
-  catch(e3){ log("corsgit failed", url, e3); return []; }}}
-}
-
-function dedupe(arr){
-  const seen=new Set(); const out=[];
-  for(const it of arr){ const key=(it.title||"")+"|"+(it.link||""); if(!seen.has(key)){ seen.add(key); out.push(it);} }
-  return out;
-}
-
-// UI state
-let current = ORDER[0], mode="summaries", rendered=0, dataByCat = {}, q="";
-const list = document.getElementById('list');
-const statusEl = document.getElementById('status');
-const moreBtn = document.getElementById('moreBtn');
-const chips = document.getElementById('chips');
-const modeSel = document.getElementById('modeSel');
-const qBox = document.getElementById('q');
-
-function renderChips(){
-  chips.innerHTML="";
-  ORDER.forEach(cat=>{
-    const b=document.createElement('button');
-    b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
-    b.textContent = cat;
-    b.addEventListener('click', ()=>{ current=cat; rendered=0; renderList(true); });
-    chips.appendChild(b);
-  });
-}
-
-function rowView(it){
-  const li = document.createElement('li');
-  const sum = summarize(it.description||"", 600);
-  const showSum = mode!=='headlines' && sum;
-  li.className="p-3";
-  li.innerHTML = `<div class="flex items-start gap-3">
-    <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" onerror="this.style.display='none'">
-    <div class="min-w-0 w-full">
-      <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
-      <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
-      ${ showSum ? `<div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 line-5">${sum}</div>`:''}
-      <div class="mt-1 flex gap-3">
-        <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
-        <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-r="1">Read here</button>
+  <!-- Manual location dialog -->
+  <dialog id="locDialog" class="rounded-xl border border-slate-300/70 dark:border-slate-700/70 p-0 w-[92%] max-w-sm bg-white/95 dark:bg-slate-900/95">
+    <form method="dialog">
+      <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 text-sm font-semibold">Set location</div>
+      <div class="p-3 space-y-2">
+        <input id="locInput" class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 text-sm" placeholder="City or ZIP (e.g., Columbus or 43215)">
+        <div id="locResults" class="text-sm text-slate-600 dark:text-slate-400"></div>
       </div>
-    </div>
-  </div>`;
-  li.querySelector('[data-r]').addEventListener('click', ()=>openReader(it));
-  return li;
-}
+      <div class="p-3 border-t border-slate-200/70 dark:border-slate-800/70 flex justify-end gap-2">
+        <button value="cancel" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Cancel</button>
+      </div>
+    </form>
+  </dialog>
 
-function getFiltered(cat){
-  const all = dataByCat[cat] || [];
-  if (!q) return all;
-  const L = q.toLowerCase();
-  return all.filter(it => ((it.title||"") + " " + (it.source||"") + " " + cleanHtml(it.description||"")).toLowerCase().includes(L));
-}
+  <script>
+    // Debug: surface any JS errors visibly
+    window.addEventListener('error', (e)=>{
+      const box = document.getElementById('status');
+      if (box) { box.textContent = 'Error: ' + (e.message || 'Script error'); }
+      console.error('Runtime error:', e);
+    });
 
-function renderList(reset){
-  renderChips();
-  const items = getFiltered(current);
-  if (reset) list.innerHTML="";
-  const batch = items.slice(rendered, rendered+PAGE_SIZE);
-  batch.forEach(it => list.appendChild(rowView(it)));
-  rendered += batch.length;
-  moreBtn.classList.toggle('hidden', rendered >= items.length);
-  statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
-}
+    // ----------------------------
+    // CONFIG
+    // ----------------------------
+    const FEEDS = {
+      "Top": [],
+      "National News": [
+        "https://feeds.reuters.com/reuters/topNews",
+        "https://feeds.apnews.com/apf-topnews",
+        "https://www.bbc.com/news/world/us_and_canada/rss.xml",
+        "https://www.npr.org/feeds/1001/rss.xml",
+        "https://www.politico.com/rss/politics-news.xml",
+        "https://www.axios.com/feeds/feed.rss"
+      ],
+      "Ohio News": [
+        "https://ohiocapitaljournal.com/feed/",
+        "https://www.cleveland.com/ohio/rss.xml",
+        "https://www.dispatch.com/arcio/rss/category/news/?outputType=xml",
+        "https://www.cincinnati.com/rss/news"
+      ],
+      "Columbus News": [
+        "https://news.wosu.org/rss",
+        "https://www.nbc4i.com/feed/",
+        "https://abc6onyourside.com/rss",
+        "https://www.10tv.com/feeds/rssFeed?section=news",
+        "https://www.columbusunderground.com/feed/"
+      ],
+      "Home Lending": [
+        "https://www.housingwire.com/section/mortgage/feed/",
+        "https://www.mortgagenewsdaily.com/rss",
+        "https://www.nationalmortgagenews.com/rss",
+        "https://www.fhfa.gov/Feeds/News"
+      ],
+      "AI": [
+        "https://www.technologyreview.com/feed/",
+        "https://openai.com/blog/rss",
+        "https://ai.googleblog.com/feeds/posts/default?alt=rss",
+        "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "https://arstechnica.com/information-technology/feed/"
+      ]
+    };
+    const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI"];
+    const PAGE_SIZE = 5;
+    const MAX_PER_CAT = 60;
+    const TIMEOUT = 12000;
 
-async function loadCategory(cat){
-  statusEl.textContent = `Loading ${cat}…`;
-  const feeds = FEEDS[cat] || [];
-  const results = await Promise.allSettled(feeds.map(loadFeed));
-  let merged=[];
-  for (const r of results) if (r.status==="fulfilled") merged=merged.concat(r.value);
-  merged = dedupe(merged).sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).slice(0,60);
-  dataByCat[cat]=merged;
-  if (cat===current){ rendered=0; renderList(true); }
-}
+    // ----------------------------
+    // UTIL
+    // ----------------------------
+    const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
+    const allorigins = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
+    const corsgit    = (u) => `https://cors.isomorphic-git.org/${u}`;
+    function cleanHtml(html){ return (html||"").replace(/<script[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style[^>]*>[\s\S]*?<\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
+    function summarizeAdaptive(text){
+      const t = cleanHtml(text||"");
+      const len = t.length;
+      const cap = len > 1500 ? 900 : len > 800 ? 700 : len > 400 ? 500 : 300;
+      const parts = t.split(/(?<=[.!?])\s+/).filter(Boolean);
+      let out=""; for(const s of parts){ if((out+(out?" ":"")+s).length<=cap) out+=(out?" ":"")+s; else break; }
+      return out || t.slice(0, cap);
+    }
+    function timeAgo(s){ const d=new Date(s); if(isNaN(d)) return ""; const sec=Math.floor((Date.now()-d)/1000); const pairs=[["yr",31536000],["mo",2592000],["d",86400],["h",3600],["m",60],["s",1]]; for(const [n,v] of pairs){ const k=Math.floor(sec/v); if(k>=1) return k+n; } return "now"; }
+    function guessThumb(x){
+      const link = x.link || ""; let domain = ""; try { domain = new URL(link).origin; } catch {}
+      const f = x.thumbnail || x.enclosure?.link || x.enclosure?.url || x.enclosure?.thumbnail || x.enclosure;
+      if (f && typeof f === "string") return f;
+      if (x.desc){ const m=x.desc.match(/<img[^>]+src=["']([^"']+)["']/i); if(m&&m[1]) return m[1]; }
+      return domain?`https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`:"";
+    }
+    function dedupe(items){
+      const seen = new Set(), out=[];
+      for(const it of items){
+        const key = (it.title||"").trim().toLowerCase()+"|"+(it.link||"");
+        if(!seen.has(key)){ seen.add(key); out.push(it); }
+      }
+      return out;
+    }
+    async function fetchText(url){
+      const ctrl=new AbortController(); const id=setTimeout(()=>ctrl.abort(), TIMEOUT);
+      try{ const r=await fetch(url,{signal:ctrl.signal}); if(!r.ok) throw new Error("HTTP "+r.status); return await r.text(); }
+      finally{ clearTimeout(id); }
+    }
+    async function loadFeedJSON(url){
+      const r=await fetch(rss2json(url));
+      if(!r.ok) throw new Error("rss2json "+r.status);
+      const j=await r.json();
+      return (j.items||[]).map(x=>({title:x.title, link:x.link, desc:x.description || x.content || x.content_html || "", pubDate:x.pubDate||x.pub_date||x.date||x.published, source:j.feed?.title || (new URL(url)).hostname, thumb:guessThumb(x) }));
+    }
+    async function loadFeedXML(url, proxy){
+      const txt = await fetchText(proxy(url));
+      const doc = new DOMParser().parseFromString(txt, "application/xml");
+      const nodes = Array.from(doc.querySelectorAll("item,entry"));
+      return nodes.map(node=>{
+        const g = sel => node.querySelector(sel)?.textContent || "";
+        const linkNode = node.querySelector("link");
+        let link = g("link");
+        if (linkNode && linkNode.getAttribute("href")) link = linkNode.getAttribute("href");
+        const enclosure = node.querySelector("enclosure");
+        const thumb = enclosure?.getAttribute("url") || "";
+        return { title: g("title"), link, desc:g("description")||g("content")||g("summary"), pubDate:g("pubDate")||g("updated")||g("published"), source: (doc.querySelector("channel>title")?.textContent) || (new URL(url)).hostname, thumb };
+      });
+    }
+    async function loadFeed(url){
+      try { return await loadFeedJSON(url); }
+      catch(e1){ try { return await loadFeedXML(url, allorigins); }
+      catch(e2){ try { return await loadFeedXML(url, corsgit); }
+      catch(e3){ console.warn("Feed failed", url, e1, e2, e3); return []; }}}
+    }
 
-async function loadAll(){
-  for (const cat of ORDER) await loadCategory(cat);
-  statusEl.textContent = "Done.";
-}
+    // Markets helpers
+    function signNum(n){ return n>0?`+${n.toFixed(2)}`:n<0?`${n.toFixed(2)}`:`${n.toFixed(2)}`; }
+    function pct(a,b){ if(!b) return "0.00%"; const p=((a-b)/b)*100; return (p>=0?"+":"")+p.toFixed(2)+"%"; }
+    function colorize(el, delta){ if(!el) return; el.style.color = delta>0 ? "#16a34a" : delta<0 ? "#dc2626" : ""; }
 
-// Reader
-const reader = document.getElementById('reader');
-const readerBackdrop = document.getElementById('readerBackdrop');
-const readerTitle = document.getElementById('readerTitle');
-const readerMeta = document.getElementById('readerMeta');
-const readerBody = document.getElementById('readerBody');
-const readerOpen = document.getElementById('readerOpen');
-const readerClose = document.getElementById('readerClose');
-function openReader(it){
-  modeSel.value='reader'; mode='reader';
-  readerTitle.textContent = it.title||"";
-  readerMeta.textContent = (it.source||"") + (it.pubDate ? " · " + timeAgo(it.pubDate) : "");
-  readerBody.textContent = cleanHtml(it.description||"") || "This source didn't include full text. Tap Open to read more.";
-  readerOpen.href = it.link||"#";
-  reader.classList.remove('hidden');
-}
-readerBackdrop.addEventListener('click', ()=>reader.classList.add('hidden'));
-readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
+    function quoteOfDay(){
+      const quotes = [
+        ["Make each day your masterpiece.","John Wooden"],
+        ["The secret of getting ahead is getting started.","Mark Twain"],
+        ["What you do every day matters more than what you do once in a while.","Gretchen Rubin"],
+        ["The future depends on what you do today.","Mahatma Gandhi"],
+        ["Action is the foundational key to all success.","Pablo Picasso"],
+        ["Well done is better than well said.","Benjamin Franklin"],
+        ["It always seems impossible until it’s done.","Nelson Mandela"],
+        ["Do the hard things first.","Brian Tracy"],
+        ["The best way out is always through.","Robert Frost"],
+        ["If it costs you your peace, it’s too expensive.","Unknown"]
+      ];
+      const dayIdx = Math.floor(Date.now() / 86400000) % quotes.length;
+      const [q,a] = quotes[dayIdx];
+      const el = document.getElementById('qod'); if(el) el.textContent = `“${q}” — ${a}`;
+    }
 
-// Theme
-const themeBtn = document.getElementById('themeBtn');
-const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-const storedTheme = localStorage.getItem('theme');
-if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
-themeBtn.addEventListener('click', ()=>{ document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light'); });
+    // ----------------------------
+    // STATE
+    // ----------------------------
+    let dataByCat = {};
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")||"[]");
+    let current = ORDER[0], mode = "summaries", rendered = 0, filterQ = "";
+    const list = document.getElementById('list');
+    const statusEl = document.getElementById('status');
+    const chips = document.getElementById('chips');
+    const moreBtn = document.getElementById('moreBtn');
+    const modeSel = document.getElementById('modeSel');
+    const filterBox = document.getElementById('filterBox');
 
-// Weather
-const wxCard = document.getElementById('wxCard'), wxPlace = document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'), wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
-async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
-function bg(code,isDay){ const d=[["#dfe9f3","#fff"],["#fef9c3","#fde68a"],["#dbeafe","#bfdbfe"],["#e2e8f0","#cbd5e1"],["#e5e7eb","#9ca3af"],["#c7d2fe","#93c5fd"],["#e9d5ff","#c4b5fd"],["#f1f5f9","#e2e8f0"]]; const n=[["#0f172a","#1e293b"],["#0b132b","#1c2541"],["#0b1220","#1f2a44"],["#0f172a","#334155"]]; return (isDay?d:n)[2]; }
-function wtxt(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65].includes(code)) return "Rain"; if([80,81,82].includes(code)) return "Showers"; if([71,73,75].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
-async function loadWeather(lat,lon){
-  try{
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto`;
-    const j=await jget(url);
-    const cur=j.current_weather; const code=cur.weathercode??2, isDay=cur.is_day??1;
-    wxPlace.textContent = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-    // reverse geocode
-    try{ const g=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`); const p=g?.results?.[0]; if(p){ wxPlace.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", "); } }catch{}
-    wxDesc.textContent = `${wtxt(code)} · Wind ${Math.round(cur.windspeed)} mph`;
-    wxTemp.textContent = `${Math.round(cur.temperature)}°F`;
-    wxMeta.textContent = `As of ${new Date().toLocaleTimeString()}`;
-    wxCard.classList.remove('hidden'); wxHint.classList.add('hidden');
-    const [c1,c2]=bg(code,isDay); document.body.style.background=`linear-gradient(135deg, ${c1}, ${c2})`;
-    localStorage.setItem("wx", JSON.stringify({lat,lon,cur,t:Date.now()}));
-  }catch(e){ wxDesc.textContent="Weather unavailable. Tap 📍 to retry."; wxCard.classList.remove('hidden'); }
-}
-function askGeo(){
-  if (!navigator.geolocation){ wxHint.textContent="Geolocation not supported."; return; }
-  navigator.geolocation.getCurrentPosition(pos => {
-    const {latitude:lat, longitude:lon} = pos.coords || {};
-    if (typeof lat==="number" && typeof lon==="number") loadWeather(lat,lon);
-  }, err => {
-    wxHint.textContent = "Location blocked. Tap 📍 again and allow. (Check site settings.)";
-  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
-}
-document.getElementById('locBtn').addEventListener('click', askGeo);
+    // ----------------------------
+    // UI RENDER
+    // ----------------------------
+    function chipButton(cat){
+      const b=document.createElement('button');
+      b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
+      b.textContent=cat.replace(" News","");
+      b.addEventListener('click', ()=>{ current=cat; rendered=0; renderList(true); });
+      return b;
+    }
+    function renderChips(){ chips.innerHTML=""; ORDER.forEach(cat => chips.appendChild(chipButton(cat))); }
+    function skeleRow(){
+      const li=document.createElement('li'); li.className="p-3";
+      li.innerHTML=`<div class="flex items-start gap-3">
+        <div class="thumb skeleton"></div>
+        <div class="min-w-0 w-full">
+          <div class="h-4 rounded skeleton w-3/4 mb-2"></div>
+          <div class="h-3 rounded skeleton w-1/2 mb-1"></div>
+          <div class="h-3 rounded skeleton w-full mb-1"></div>
+          <div class="h-3 rounded skeleton w-5/6"></div>
+        </div></div>`;
+      return li;
+    }
+    function rowView(it){
+      const li=document.createElement('li'); li.className="p-3";
+      const sum = summarizeAdaptive(it.desc);
+      const long = sum.length > 550 ? 'line-7' : sum.length > 380 ? 'line-5' : 'line-3';
+      const starred = bookmarks.some(b=>b.link===it.link);
+      li.innerHTML=`<div class="flex items-start gap-3">
+        <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+        <div class="min-w-0 w-full">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
+            </div>
+            <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
+          </div>
+          <div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${long}">${sum}</div>
+          <div class="mt-1 flex gap-3">
+            <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
+            <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
+          </div>
+        </div>
+      </div>`;
+      li.querySelector('[data-read]').addEventListener('click', ()=>openReader(it));
+      li.querySelector('[data-star]').addEventListener('click', ()=>toggleBookmark(it, li.querySelector('[data-star]')));
+      return li;
+    }
+    function getFiltered(cat){
+      let items = (cat==="Bookmarks") ? bookmarks : (dataByCat[cat] || []);
+      if(cat==="Top"){
+        const srcCats = ORDER.filter(c=>c!=="Top" && c!=="Bookmarks");
+        items = srcCats.flatMap(c => dataByCat[c] || []);
+        const now = Date.now();
+        items.forEach(it => {
+          const t = new Date(it.pubDate||0).getTime();
+          let score = isNaN(t) ? 0 : Math.max(0, 1_000_000_000 - (now - t));
+          try { const host=new URL(it.link).host.replace(/^www\./,''); score += (1000 / (1 + (host.length%7))); } catch {}
+          it.__score = score;
+        });
+        items = dedupe(items).sort((a,b)=> (b.__score||0) - (a.__score||0));
+      }
+      const q = (filterQ||"").toLowerCase();
+      if (q) items = items.filter(it => ((it.title||"") + " " + (it.source||"") + " " + cleanHtml(it.desc||"")).toLowerCase().includes(q));
+      return items.slice(0, MAX_PER_CAT);
+    }
+    function renderList(reset=false){
+      renderChips();
+      const items = getFiltered(current);
+      if (reset) list.innerHTML="";
+      const slice = items.slice(rendered, rendered + PAGE_SIZE);
+      if (reset && items.length===0){ for (let i=0;i<5;i++) list.appendChild(skeleRow()); }
+      else { slice.forEach(it => list.appendChild(rowView(it)); }
+      rendered += slice.length;
+      moreBtn.classList.toggle('hidden', rendered >= items.length);
+      statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
+    }
 
-// Search & controls
-let timer;
-qBox.addEventListener('input', ()=>{ clearTimeout(timer); timer=setTimeout(()=>{ q=qBox.value||""; rendered=0; renderList(true); }, 180); });
-modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
-moreBtn.addEventListener('click', ()=>renderList(false));
-document.getElementById('refreshBtn').addEventListener('click', ()=>loadAll());
+    // ----------------------------
+    // LOADING
+    // ----------------------------
+    async function loadCategory(cat){
+      if (cat==="Top" || cat==="Bookmarks") return;
+      const feeds = FEEDS[cat] || [];
+      const results = await Promise.allSettled(feeds.map(loadFeed));
+      let merged=[]; for(const r of results) if(r.status==="fulfilled") merged=merged.concat(r.value);
+      dataByCat[cat] = dedupe(merged).sort((a,b)=> new Date(b.pubDate||0) - new Date(a.pubDate||0)).slice(0, MAX_PER_CAT);
+      if (cat===current) { rendered=0; renderList(true); }
+    }
+    async function loadAll(){
+      for (const cat of ORDER.filter(c=>c!=="Top")) await loadCategory(cat);
+      rendered=0; renderList(true);
+      updateNeedToKnow();
+    }
 
-(function init(){
-  // restore cached weather fast
-  try{ const c=JSON.parse(localStorage.getItem("wx")||"null"); if(c && Date.now()-c.t<30*60*1000){ const {cur,lat,lon}=c; wxPlace.textContent=`${lat.toFixed(2)}, ${lon.toFixed(2)}`; wxDesc.textContent=`${wtxt(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(cur.temperature)}°F`; wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`; wxCard.classList.remove('hidden'); } }catch{}
-  // auto-ask for geo; some browsers need a user gesture, so we also show big 📍 button
-  askGeo();
-  renderChips();
-  renderList(true);
-  loadAll();
-})();
-</script>
+    // ----------------------------
+    // NEED-TO-KNOW & MARKETS & SUN TIMES
+    // ----------------------------
+    function updateNeedToKnow(){
+      const ul = document.getElementById('needToKnow'); if(!ul) return;
+      const cats = ORDER.filter(c => c!=="Top" && c!=="Bookmarks");
+      let items = []; for (const c of cats) items = items.concat(dataByCat[c] || []);
+      if (items.length === 0){ ul.innerHTML = '<li>Loading…</li>'; return; }
+      const now = Date.now();
+      items.forEach(it => {
+        const t = new Date(it.pubDate||0).getTime();
+        let score = isNaN(t) ? 0 : Math.max(0, 1_000_000_000 - (now - t));
+        try{ const host=(new URL(it.link)).host.replace(/^www\./,''); score += (1000 / (1 + (host.length%7))); }catch{}
+        it.__score = score;
+      });
+      items = dedupe(items).sort((a,b)=> (b.__score||0)-(a.__score||0)).slice(0,3);
+      ul.innerHTML = "";
+      items.forEach(it => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="font-semibold">${it.title}</span> <span class="text-[11px] text-slate-500 dark:text-slate-400">(${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''})</span>`;
+        ul.appendChild(li);
+      });
+    }
+    async function fetchMarkets(){
+      try{
+        const url = allorigins('https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC,%5EDJI,BTC-USD');
+        const r = await fetch(url);
+        if(!r.ok) throw new Error("Markets "+r.status);
+        const j = await r.json();
+        const res = j.quoteResponse?.result || [];
+        const by = Object.fromEntries(res.map(x => [x.symbol, x]));
+        const sp = by["^GSPC"], dji = by["^DJI"], btc = by["BTC-USD"];
+        const spEl = document.getElementById('mkSP'), djiEl = document.getElementById('mkDJI'), btcEl = document.getElementById('mkBTC');
+        if (sp && spEl){ const ch = (sp.regularMarketPrice - sp.regularMarketPreviousClose); spEl.textContent = `S&P 500: ${sp.regularMarketPrice.toFixed(2)} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((sp.regularMarketPrice - sp.regularMarketPreviousClose)/sp.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(spEl, ch); }
+        if (dji && djiEl){ const ch = (dji.regularMarketPrice - dji.regularMarketPreviousClose); djiEl.textContent = `Dow: ${Math.round(dji.regularMarketPrice).toLocaleString()} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((dji.regularMarketPrice - dji.regularMarketPreviousClose)/dji.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(djiEl, ch); }
+        if (btc && btcEl){ const ch = (btc.regularMarketPrice - btc.regularMarketPreviousClose); btcEl.textContent = `BTC: ${Math.round(btc.regularMarketPrice).toLocaleString()} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((btc.regularMarketPrice - btc.regularMarketPreviousClose)/btc.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(btcEl, ch); }
+      }catch(e){
+        const spEl = document.getElementById('mkSP'); if(spEl) spEl.textContent = "S&P 500: unavailable";
+      }
+    }
+    async function fetchSunTimes(lat, lon){
+      try{
+        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`);
+        if(!r.ok) throw new Error("Sun API "+r.status);
+        const j = await r.json();
+        const data = j.status==="OK" ? j.results : null;
+        const el = document.getElementById('sunTimes');
+        if (!data || !el){ return; }
+        const sr = new Date(data.sunrise), ss = new Date(data.sunset);
+        const dur = data.day_length;
+        el.textContent = `Sunrise ${sr.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · Sunset ${ss.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · Daylight ${dur}`;
+      }catch(e){
+        const el = document.getElementById('sunTimes'); if(el) el.textContent = "Unavailable";
+      }
+    }
+
+    // ----------------------------
+    // READER & BOOKMARKS
+    // ----------------------------
+    const reader = document.getElementById('reader');
+    const readerBackdrop = document.getElementById('readerBackdrop');
+    const readerTitle = document.getElementById('readerTitle');
+    const readerMeta = document.getElementById('readerMeta');
+    const readerImg = document.getElementById('readerImg');
+    const readerBody = document.getElementById('readerBody');
+    const readerOpen = document.getElementById('readerOpen');
+    const readerClose = document.getElementById('readerClose');
+    const readerStar = document.getElementById('readerStar');
+    let readerItem = null;
+    function toggleBookmark(it, btn=null){
+      const idx = bookmarks.findIndex(b=>b.link===it.link);
+      if (idx>=0) bookmarks.splice(idx,1);
+      else bookmarks.unshift({title:it.title, link:it.link, desc:it.desc, pubDate:it.pubDate, source:it.source, thumb:it.thumb});
+      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      if(btn){ if(idx>=0){ btn.classList.remove('bg-yellow-200/40','dark:bg-yellow-600/20'); } else { btn.classList.add('bg-yellow-200/40','dark:bg-yellow-600/20'); } }
+    }
+    function openReader(it){
+      readerItem = it;
+      modeSel.value='reader'; mode='reader';
+      readerTitle.textContent = it.title || "";
+      readerMeta.textContent = `${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}`;
+      if (it.thumb) { readerImg.src=it.thumb; readerImg.classList.remove('hidden'); } else readerImg.classList.add('hidden');
+      readerBody.textContent = cleanHtml(it.desc || "") || "This source doesn't include full text in RSS. Tap Open to read more.";
+      readerOpen.href = it.link || "#";
+      const starred = bookmarks.some(b=>b.link===it.link);
+      readerStar.classList.toggle('bg-yellow-200/40', starred); readerStar.classList.toggle('dark:bg-yellow-600/20', starred);
+      reader.classList.remove('hidden');
+    }
+    readerBackdrop.addEventListener('click', ()=>reader.classList.add('hidden'));
+    readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
+    readerStar.addEventListener('click', ()=>{ if(readerItem) toggleBookmark(readerItem, readerStar); });
+
+    // ----------------------------
+    // WEATHER (GPS + manual)
+    // ----------------------------
+    const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'), wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
+    const locBtn = document.getElementById('locBtn'), locDialog = document.getElementById('locDialog'), locInput = document.getElementById('locInput'), locResults = document.getElementById('locResults');
+    function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65].includes(code)) return "Rain"; if([80,81,82].includes(code)) return "Showers"; if([71,73,75].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
+    async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
+    async function reverse(lat,lon){ try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`); const p=j?.results?.[0]; if(!p) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; return [p.name,p.admin1,p.country].filter(Boolean).join(", "); } catch { return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; } }
+    async function loadWeather(lat,lon){
+      try{
+        const j=await jget(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto`);
+        const cur=j.current_weather; const place=await reverse(lat,lon);
+        wxPlace.textContent=place; wxDesc.textContent=`${wtext(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(cur.temperature)}°F`; wxMeta.textContent=`As of ${new Date().toLocaleTimeString()}`; wxCard.classList.remove("hidden"); wxHint.classList.add("hidden");
+        localStorage.setItem("wx", JSON.stringify({lat,lon,cur,place,t:Date.now()}));
+        fetchSunTimes(lat, lon);
+      } catch(e){ wxDesc.textContent="Weather unavailable. Tap 📍 or set city/ZIP."; wxCard.classList.remove("hidden"); }
+    }
+    function askGeo(){
+      if(!navigator.geolocation){ locDialog.showModal(); return; }
+      navigator.geolocation.getCurrentPosition(pos=>{ const {latitude:lat,longitude:lon}=pos.coords||{}; if(typeof lat==="number"&&typeof lon==="number") loadWeather(lat,lon); }, err=>{ locDialog.showModal(); }, { enableHighAccuracy:true, timeout:10000, maximumAge:60000 });
+    }
+    locBtn.addEventListener('click', askGeo);
+    // manual city/ZIP search
+    async function geocode(query){
+      try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`); const arr=j?.results||[]; if(arr.length===0){ locResults.textContent="No matches."; return; } locResults.innerHTML=""; arr.forEach(p=>{ const btn=document.createElement('button'); btn.className="block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"; btn.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", "); btn.addEventListener('click', ()=>{ locDialog.close(); loadWeather(p.latitude, p.longitude); localStorage.setItem("wxManual", JSON.stringify({lat:p.latitude,lon:p.longitude})); }); locResults.appendChild(btn); }); } catch { locResults.textContent="Search failed. Try again."; }
+    }
+    let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
+
+    // ----------------------------
+    // CONTROLS & INTERACTION
+    // ----------------------------
+    document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; } try { fetchMarkets(); } catch(e){ console.error(e); } });
+    document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockOhio').addEventListener('click', ()=>{ current="Ohio News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockLocal').addEventListener('click', ()=>{ current="Columbus News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockHL').addEventListener('click', ()=>{ current="Home Lending"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockAI').addEventListener('click', ()=>{ current="AI"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
+    let t; filterBox.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ filterQ=filterBox.value||""; rendered=0; renderList(true); }, 180); });
+
+    // Pull-to-refresh
+    let y0=null; window.addEventListener('touchstart', e=>{ if(document.scrollingElement.scrollTop===0) y0=e.touches[0].clientY; }, {passive:true});
+    window.addEventListener('touchmove', e=>{ if(y0!==null && e.touches[0].clientY - y0 > 90){ y0=null; try{ loadAll(); }catch(e){ console.error(e);} try{ fetchMarkets(); }catch(e){ console.error(e);} } }, {passive:true});
+    window.addEventListener('touchend', ()=>{ y0=null; }, {passive:true});
+
+    // Theme
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedTheme = localStorage.getItem('theme');
+    if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
+    });
+
+    // ----------------------------
+    // BOOT
+    // ----------------------------
+    (function init(){
+      renderChips();
+      quoteOfDay();
+      // cached weather/manual
+      try{
+        const m=JSON.parse(localStorage.getItem("wxManual")||"null"); if(m) loadWeather(m.lat,m.lon);
+        const c=JSON.parse(localStorage.getItem("wx")||"null");
+        if(c && Date.now()-c.t<30*60*1000){ wxPlace.textContent=c.place||(c.lat.toFixed(2)+", "+c.lon.toFixed(2)); wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`; wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`; wxCard.classList.remove("hidden"); fetchSunTimes(c.lat, c.lon); }
+      }catch{}
+      askGeo();
+      // initial list + loads
+      for(let i=0;i<5;i++) list.appendChild(skeleRow());
+      try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; }
+      try { fetchMarkets(); } catch(e){ console.error(e); }
+    })();
+  </script>
 </body>
 </html>
