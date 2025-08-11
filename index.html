@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Morning News — Ultimate</title>
   <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -21,11 +23,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root { --tA: rgba(99,102,241,.06); --tB: rgba(14,165,233,.06); }
+    /* Weather-driven backgrounds (light) */
     body { background: linear-gradient(135deg,#f8fafc,#eef2ff); background-attachment: fixed; transition: background 600ms cubic-bezier(.2,.8,.2,1); }
+    .bg-clear   { background-image: linear-gradient(135deg,#e6f7ff,#fff9db); }
+    .bg-clouds  { background-image: linear-gradient(135deg,#e5e7eb,#f1f5f9); }
+    .bg-rain    { background-image: linear-gradient(135deg,#dbeafe,#e5e7eb); }
+    .bg-snow    { background-image: linear-gradient(135deg,#f8fafc,#e2e8f0); }
+    .bg-fog     { background-image: linear-gradient(135deg,#eef2f7,#e2e8f0); }
+    .bg-thunder { background-image: linear-gradient(135deg,#fde68a,#f1f5f9); }
+    .bg-night   { background-image: radial-gradient(1200px 600px at 50% -100px, #1f2937 0%, #0b1220 60%); }
+    /* Dark scheme */
+    @media (prefers-color-scheme: dark) {
+      body { background: linear-gradient(135deg,#0b1220,#111827); }
+      .bg-clear   { background-image: linear-gradient(135deg,#0b1220,#0f172a); }
+      .bg-clouds  { background-image: linear-gradient(135deg,#111827,#0b1220); }
+      .bg-rain    { background-image: linear-gradient(135deg,#0b1220,#0f172a); }
+      .bg-snow    { background-image: linear-gradient(135deg,#0b1220,#1f2937); }
+      .bg-fog     { background-image: linear-gradient(135deg,#0b1220,#111827); }
+      .bg-thunder { background-image: linear-gradient(135deg,#111827,#0b1220); }
+      .bg-night   { background-image: radial-gradient(1200px 600px at 50% -100px, #0f172a 0%, #0b1220 60%); }
+    }
     .glass { backdrop-filter: saturate(140%) blur(10px); }
     .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
-    @media (prefers-color-scheme: dark) { .thumb { background:#0b1220; } body { background: linear-gradient(135deg,#0b1220,#111827); } }
+    @media (prefers-color-scheme: dark) { .thumb { background:#0b1220; } }
     .line-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
     .line-5 { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
     .line-7 { display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden; }
@@ -37,6 +57,7 @@
   </style>
 </head>
 <body class="h-full text-slate-900 dark:text-slate-100">
+  <!-- Header -->
   <header class="sticky top-0 z-50 glass bg-white/80 dark:bg-slate-950/75 border-b border-slate-200/70 dark:border-slate-800/70 safe-top">
     <div class="max-w-screen-sm mx-auto px-3 pt-1 pb-2 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -52,6 +73,7 @@
       </div>
     </div>
 
+    <!-- Search + Mode + Location -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
       <input id="filterBox" type="search" placeholder="Search…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
       <button id="locBtn" title="Use my location" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍</button>
@@ -62,10 +84,12 @@
       </select>
     </div>
 
+    <!-- Category chips -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 overflow-x-auto no-scrollbar">
       <div id="chips" class="flex gap-2"></div>
     </div>
 
+    <!-- Weather -->
     <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
       <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
         <div class="min-w-0">
@@ -81,6 +105,7 @@
     </div>
   </header>
 
+  <!-- Dashboard -->
   <section class="max-w-screen-sm mx-auto px-3 pt-2 pb-1 grid grid-cols-1 gap-2">
     <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
       <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Need to know</div>
@@ -106,6 +131,7 @@
     </div>
   </section>
 
+  <!-- Main -->
   <main class="max-w-screen-sm mx-auto px-3 pt-2 pb-24">
     <div id="status" class="mb-2 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400">Loading…</div>
     <div id="panel" class="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 shadow-glass">
@@ -114,6 +140,7 @@
     </div>
   </main>
 
+  <!-- Bottom dock -->
   <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
     <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
       <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
@@ -125,8 +152,10 @@
     </div>
   </nav>
 
+  <!-- Bookmarks FAB -->
   <button id="bmBtn" title="Bookmarks" class="fixed bottom-20 right-4 z-50 px-3 py-2 rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/80 text-xs shadow-glass">⭐︎ Bookmarks</button>
 
+  <!-- Reader -->
   <div id="reader" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
     <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 shadow-glass flex flex-col max-w-screen-sm mx-auto">
@@ -146,6 +175,7 @@
     </div>
   </div>
 
+  <!-- Manual location dialog -->
   <dialog id="locDialog" class="rounded-xl border border-slate-300/70 dark:border-slate-700/70 p-0 w-[92%] max-w-sm bg-white/95 dark:bg-slate-900/95">
     <form method="dialog">
       <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 text-sm font-semibold">Set location</div>
@@ -160,13 +190,14 @@
   </dialog>
 
   <script>
-    // show runtime errors in status (parse errors won't reach here)
+    // Show runtime errors in status (parse errors won’t reach here)
     window.addEventListener('error', (e)=>{
       const box = document.getElementById('status');
       if (box) { box.textContent = 'Error: ' + (e.message || 'Script error'); }
       console.error('Runtime error:', e);
     });
 
+    /* ------------------ CONFIG ------------------ */
     const FEEDS = {
       "Top": [],
       "National News": [
@@ -207,6 +238,7 @@
     const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI"];
     const PAGE_SIZE = 5, MAX_PER_CAT = 60, TIMEOUT = 12000;
 
+    /* ------------------ UTIL ------------------ */
     const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
     const allorigins = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
     const corsgit    = (u) => `https://cors.isomorphic-git.org/${u}`;
@@ -267,10 +299,8 @@
       catch(e3){ console.warn("Feed failed", url, e1, e2, e3); return []; }}}
     }
 
-    function signNum(n){ return n>0?`+${n.toFixed(2)}`:n<0?`${n.toFixed(2)}`:`${n.toFixed(2)}`; }
-    function pct(a,b){ if(!b) return "0.00%"; const p=((a-b)/b)*100; return (p>=0?"+":"")+p.toFixed(2)+"%"; }
+    /* -------- Markets / Quote / Weather helpers -------- */
     function colorize(el, delta){ if(!el) return; el.style.color = delta>0 ? "#16a34a" : delta<0 ? "#dc2626" : ""; }
-
     function quoteOfDay(){
       const quotes = [
         ["Make each day your masterpiece.","John Wooden"],
@@ -284,21 +314,35 @@
         ["The best way out is always through.","Robert Frost"],
         ["If it costs you your peace, it’s too expensive.","Unknown"]
       ];
-      const dayIdx = Math.floor(Date.now() / 86400000) % quotes.length;
-      const [q,a] = quotes[dayIdx];
+      const i = Math.floor(Date.now()/86400000)%quotes.length;
+      const [q,a] = quotes[i];
       const el = document.getElementById('qod'); if(el) el.textContent = `“${q}” — ${a}`;
     }
+    function isNight(){ const h = new Date().getHours(); return (h < 6 || h >= 20); }
+    function weatherClassFrom(code){
+      if ([95,96,99].includes(code)) return 'bg-thunder';
+      if ([61,63,65,80,81,82].includes(code)) return 'bg-rain';
+      if ([71,73,75,85,86].includes(code)) return 'bg-snow';
+      if ([45,48].includes(code)) return 'bg-fog';
+      if ([0,1,2].includes(code)) return (isNight() ? 'bg-night' : 'bg-clear');
+      if ([3].includes(code)) return 'bg-clouds';
+      return 'bg-clouds';
+    }
+    function setWeatherBackground(code){
+      const cls = weatherClassFrom(code);
+      const body = document.body;
+      body.className = body.className.split(' ').filter(c=>!/^bg-(clear|clouds|rain|snow|fog|thunder|night)$/.test(c)).join(' ').trim();
+      body.classList.add(cls);
+    }
 
+    /* ------------------ STATE ------------------ */
     let dataByCat = {};
     let bookmarks = JSON.parse(localStorage.getItem("bookmarks")||"[]");
     let current = ORDER[0], mode = "summaries", rendered = 0, filterQ = "";
-    const list = document.getElementById('list');
-    const statusEl = document.getElementById('status');
-    const chips = document.getElementById('chips');
-    const moreBtn = document.getElementById('moreBtn');
-    const modeSel = document.getElementById('modeSel');
-    const filterBox = document.getElementById('filterBox');
+    const list = document.getElementById('list'), statusEl = document.getElementById('status'), chips = document.getElementById('chips'),
+          moreBtn = document.getElementById('moreBtn'), modeSel = document.getElementById('modeSel'), filterBox = document.getElementById('filterBox');
 
+    /* ------------------ RENDER ------------------ */
     function chipButton(cat){
       const b=document.createElement('button');
       b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
@@ -369,12 +413,13 @@
       if (reset) list.innerHTML="";
       const slice = items.slice(rendered, rendered + PAGE_SIZE);
       if (reset && items.length===0){ for (let i=0;i<5;i++) list.appendChild(skeleRow()); }
-      else { slice.forEach(it => list.appendChild(rowView(it))); }  <!-- fixed line -->
+      else { slice.forEach(it => list.appendChild(rowView(it))); }
       rendered += slice.length;
       moreBtn.classList.toggle('hidden', rendered >= items.length);
       statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
     }
 
+    /* ------------------ LOADERS ------------------ */
     async function loadCategory(cat){
       if (cat==="Top" || cat==="Bookmarks") return;
       const feeds = FEEDS[cat] || [];
@@ -409,6 +454,7 @@
         ul.appendChild(li);
       });
     }
+
     async function fetchMarkets(){
       try{
         const url = allorigins('https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC,%5EDJI,BTC-USD');
@@ -426,31 +472,13 @@
         const spEl = document.getElementById('mkSP'); if(spEl) spEl.textContent = "S&P 500: unavailable";
       }
     }
-    async function fetchSunTimes(lat, lon){
-      try{
-        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`);
-        if(!r.ok) throw new Error("Sun API "+r.status);
-        const j = await r.json();
-        const data = j.status==="OK" ? j.results : null;
-        const el = document.getElementById('sunTimes');
-        if (!data || !el){ return; }
-        const sr = new Date(data.sunrise), ss = new Date(data.sunset);
-        const dur = data.day_length;
-        el.textContent = `Sunrise ${sr.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · Sunset ${ss.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})} · Daylight ${dur}`;
-      }catch(e){
-        const el = document.getElementById('sunTimes'); if(el) el.textContent = "Unavailable";
-      }
-    }
 
-    const reader = document.getElementById('reader');
-    const readerBackdrop = document.getElementById('readerBackdrop');
-    const readerTitle = document.getElementById('readerTitle');
-    const readerMeta = document.getElementById('readerMeta');
-    const readerImg = document.getElementById('readerImg');
-    const readerBody = document.getElementById('readerBody');
-    const readerOpen = document.getElementById('readerOpen');
-    const readerClose = document.getElementById('readerClose');
-    const readerStar = document.getElementById('readerStar');
+    /* ------------------ READER & BOOKMARKS ------------------ */
+    const reader = document.getElementById('reader'), readerBackdrop = document.getElementById('readerBackdrop'),
+          readerTitle = document.getElementById('readerTitle'), readerMeta = document.getElementById('readerMeta'),
+          readerImg = document.getElementById('readerImg'), readerBody = document.getElementById('readerBody'),
+          readerOpen = document.getElementById('readerOpen'), readerClose = document.getElementById('readerClose'),
+          readerStar = document.getElementById('readerStar');
     let readerItem = null;
     function toggleBookmark(it, btn=null){
       const idx = bookmarks.findIndex(b=>b.link===it.link);
@@ -475,9 +503,13 @@
     readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
     readerStar.addEventListener('click', ()=>{ if(readerItem) toggleBookmark(readerItem, readerStar); });
 
-    const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'), wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
-    const locBtn = document.getElementById('locBtn'), locDialog = document.getElementById('locDialog'), locInput = document.getElementById('locInput'), locResults = document.getElementById('locResults');
-    function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65].includes(code)) return "Rain"; if([80,81,82].includes(code)) return "Showers"; if([71,73,75].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
+    /* ------------------ WEATHER (GPS + manual + background) ------------------ */
+    const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'),
+          wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
+    const locBtn = document.getElementById('locBtn'), locDialog = document.getElementById('locDialog'),
+          locInput = document.getElementById('locInput'), locResults = document.getElementById('locResults');
+
+    function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65,80,81,82].includes(code)) return "Rain"; if([71,73,75,85,86].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
     async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
     async function reverse(lat,lon){ try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`); const p=j?.results?.[0]; if(!p) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; return [p.name,p.admin1,p.country].filter(Boolean).join(", "); } catch { return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; } }
     async function loadWeather(lat,lon){
@@ -486,6 +518,7 @@
         const cur=j.current_weather; const place=await reverse(lat,lon);
         wxPlace.textContent=place; wxDesc.textContent=`${wtext(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(cur.temperature)}°F`; wxMeta.textContent=`As of ${new Date().toLocaleTimeString()}`; wxCard.classList.remove("hidden"); wxHint.classList.add("hidden");
         localStorage.setItem("wx", JSON.stringify({lat,lon,cur,place,t:Date.now()}));
+        setWeatherBackground(cur.weathercode);
         fetchSunTimes(lat, lon);
       } catch(e){ wxDesc.textContent="Weather unavailable. Tap 📍 or set city/ZIP."; wxCard.classList.remove("hidden"); }
     }
@@ -495,11 +528,27 @@
     }
     locBtn.addEventListener('click', askGeo);
     async function geocode(query){
-      try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`); const arr=j?.results||[]; if(arr.length===0){ locResults.textContent="No matches."; return; } locResults.innerHTML=""; arr.forEach(p=>{ const btn=document.createElement('button'); btn.className="block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"; btn.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", "); btn.addEventListener('click', ()=>{ locDialog.close(); loadWeather(p.latitude, p.longitude); localStorage.setItem("wxManual", JSON.stringify({lat:p.latitude,lon:p.longitude})); }); locResults.appendChild(btn); }); } catch { locResults.textContent="Search failed. Try again."; }
+      try{
+        const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
+        const arr=j?.results||[]; if(arr.length===0){ locResults.textContent="No matches."; return; }
+        locResults.innerHTML="";
+        arr.forEach(p=>{
+          const btn=document.createElement('button');
+          btn.className="block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800";
+          btn.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", ");
+          btn.addEventListener('click', ()=>{
+            locDialog.close();
+            loadWeather(p.latitude, p.longitude);
+            localStorage.setItem("wxManual", JSON.stringify({lat:p.latitude,lon:p.longitude,place:[p.name,p.admin1,p.country].filter(Boolean).join(", ")}));
+          });
+          locResults.appendChild(btn);
+        });
+      } catch { locResults.textContent="Search failed. Try again."; }
     }
     let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
 
-    document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; } try { fetchMarkets(); } catch(e){ console.error(e); } });
+    /* ------------------ CONTROLS ------------------ */
+    document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){} try { fetchMarkets(); } catch(e){} });
     document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
     document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
     document.getElementById('dockOhio').addEventListener('click', ()=>{ current="Ohio News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
@@ -509,10 +558,26 @@
     modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
     let t; filterBox.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ filterQ=filterBox.value||""; rendered=0; renderList(true); }, 180); });
 
+    // Pull-to-refresh
     let y0=null; window.addEventListener('touchstart', e=>{ if(document.scrollingElement.scrollTop===0) y0=e.touches[0].clientY; }, {passive:true});
-    window.addEventListener('touchmove', e=>{ if(y0!==null && e.touches[0].clientY - y0 > 90){ y0=null; try{ loadAll(); }catch(e){ console.error(e);} try{ fetchMarkets(); }catch(e){ console.error(e);} } }, {passive:true});
+    window.addEventListener('touchmove', e=>{ if(y0!==null && e.touches[0].clientY - y0 > 90){ y0=null; try{ loadAll(); }catch(e){} try{ fetchMarkets(); }catch(e){} } }, {passive:true});
     window.addEventListener('touchend', ()=>{ y0=null; }, {passive:true});
 
+    // Swipe left/right for categories
+    (function enableSwipeNav(){
+      let sx=null, sy=null, handled=false;
+      const THRESH_X=60, RATIO=1.8;
+      function switchBy(offset){
+        const cats = ORDER.filter(c=>c!=='Bookmarks');
+        const idx = cats.indexOf(current); if(idx<0) return;
+        current = cats[(idx+offset+cats.length)%cats.length]; rendered=0; renderList(true);
+      }
+      window.addEventListener('touchstart', e=>{ if(e.touches.length!==1) return; handled=false; sx=e.touches[0].clientX; sy=e.touches[0].clientY; }, {passive:true});
+      window.addEventListener('touchmove', e=>{ if(sx===null||sy===null||handled) return; const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy; if(Math.abs(dx)>THRESH_X && Math.abs(dx)>Math.abs(dy)*RATIO){ handled=true; if(dx<0) switchBy(+1); else switchBy(-1); } }, {passive:true});
+      window.addEventListener('touchend', ()=>{ sx=sy=null; handled=false; }, {passive:true});
+    })();
+
+    // Theme toggle
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     const storedTheme = localStorage.getItem('theme');
     if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
@@ -521,19 +586,34 @@
       localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
     });
 
+    /* ------------------ BOOT ------------------ */
     (function init(){
       renderChips();
       quoteOfDay();
       try{
         const m=JSON.parse(localStorage.getItem("wxManual")||"null"); if(m) loadWeather(m.lat,m.lon);
         const c=JSON.parse(localStorage.getItem("wx")||"null");
-        if(c && Date.now()-c.t<30*60*1000){ wxPlace.textContent=c.place||(c.lat.toFixed(2)+", "+c.lon.toFixed(2)); wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`; wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`; wxCard.classList.remove("hidden"); fetchSunTimes(c.lat, c.lon); }
+        if(c && Date.now()-c.t<30*60*1000){
+          if(!c.place){ reverse(c.lat,c.lon).then(p=>{ c.place=p; localStorage.setItem("wx", JSON.stringify(c)); wxPlace.textContent=p; }); }
+          wxPlace.textContent=c.place||"Locating…";
+          wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`;
+          wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`;
+          wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`;
+          wxCard.classList.remove("hidden");
+          setWeatherBackground(c.cur.weathercode);
+          fetchSunTimes(c.lat, c.lon);
+        }
       }catch{}
       askGeo();
       for(let i=0;i<5;i++) list.appendChild(skeleRow());
-      try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; }
-      try { fetchMarkets(); } catch(e){ console.error(e); }
+      try { loadAll(); } catch(e){}
+      try { fetchMarkets(); } catch(e){}
     })();
+
+    // Register PWA service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+    }
   </script>
 </body>
 </html>
