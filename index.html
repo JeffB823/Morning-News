@@ -90,7 +90,7 @@
     </div>
 
     <!-- Weather -->
-    <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
+    <div class="max-w-screen-sm mx_auto px-3 pb-3 space-y-2">
       <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
         <div class="min-w-0">
           <div id="wxPlace" class="font-semibold truncate">—</div>
@@ -142,7 +142,7 @@
 
   <!-- Bottom dock -->
   <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
-    <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
+    <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text:[11px]">
       <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
       <button id="dockNat"  class="flex flex-col items-center gap-1 py-1">🌎<span>National</span></button>
       <button id="dockOhio" class="flex flex-col items-center gap-1 py-1">🗺️<span>Ohio</span></button>
@@ -511,26 +511,56 @@
 
     function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65,80,81,82].includes(code)) return "Rain"; if([71,73,75,85,86].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
     async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
-    async function reverse(lat,lon){ try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`); const p=j?.results?.[0]; if(!p) return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; return [p.name,p.admin1,p.country].filter(Boolean).join(", "); } catch { return `${lat.toFixed(2)}, ${lon.toFixed(2)}`; } }
+
+    // NEW: never return lat/long string; return name or null
+    async function reverse(lat,lon){
+      try{
+        const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);
+        const p=j?.results?.[0];
+        if(!p) return null;
+        return [p.name,p.admin1,p.country].filter(Boolean).join(", ");
+      } catch { return null; }
+    }
+
+    // NEW: use friendly name or "Your location"; always call sunrise/sunset
     async function loadWeather(lat,lon){
       try{
         const j=await jget(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto`);
-        const cur=j.current_weather; const place=await reverse(lat,lon);
-        wxPlace.textContent=place; wxDesc.textContent=`${wtext(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(cur.temperature)}°F`; wxMeta.textContent=`As of ${new Date().toLocaleTimeString()}`; wxCard.classList.remove("hidden"); wxHint.classList.add("hidden");
+        const cur=j.current_weather;
+        let place = await reverse(lat,lon);
+        if(!place) place = "Your location";
+
+        wxPlace.textContent=place;
+        wxDesc.textContent=`${wtext(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`;
+        wxTemp.textContent=`${Math.round(cur.temperature)}°F`;
+        wxMeta.textContent=`As of ${new Date().toLocaleTimeString()}`;
+        wxCard.classList.remove("hidden");
+        wxHint.classList.add("hidden");
+
         localStorage.setItem("wx", JSON.stringify({lat,lon,cur,place,t:Date.now()}));
         setWeatherBackground(cur.weathercode);
         fetchSunTimes(lat, lon);
-      } catch(e){ wxDesc.textContent="Weather unavailable. Tap 📍 or set city/ZIP."; wxCard.classList.remove("hidden"); }
+      } catch(e){
+        wxDesc.textContent="Weather unavailable. Tap 📍 or set city/ZIP.";
+        wxCard.classList.remove("hidden");
+      }
     }
+
     function askGeo(){
       if(!navigator.geolocation){ locDialog.showModal(); return; }
-      navigator.geolocation.getCurrentPosition(pos=>{ const {latitude:lat,longitude:lon}=pos.coords||{}; if(typeof lat==="number"&&typeof lon==="number") loadWeather(lat,lon); }, err=>{ locDialog.showModal(); }, { enableHighAccuracy:true, timeout:10000, maximumAge:60000 });
+      navigator.geolocation.getCurrentPosition(
+        pos=>{ const {latitude:lat,longitude:lon}=pos.coords||{}; if(typeof lat==="number"&&typeof lon==="number") loadWeather(lat,lon); },
+        err=>{ locDialog.showModal(); },
+        { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
+      );
     }
     locBtn.addEventListener('click', askGeo);
+
     async function geocode(query){
       try{
         const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
-        const arr=j?.results||[]; if(arr.length===0){ locResults.textContent="No matches."; return; }
+        const arr=j?.results||[];
+        if(arr.length===0){ locResults.textContent="No matches."; return; }
         locResults.innerHTML="";
         arr.forEach(p=>{
           const btn=document.createElement('button');
@@ -539,13 +569,34 @@
           btn.addEventListener('click', ()=>{
             locDialog.close();
             loadWeather(p.latitude, p.longitude);
-            localStorage.setItem("wxManual", JSON.stringify({lat:p.latitude,lon:p.longitude,place:[p.name,p.admin1,p.country].filter(Boolean).join(", ")}));
+            localStorage.setItem("wxManual", JSON.stringify({
+              lat:p.latitude, lon:p.longitude,
+              place:[p.name,p.admin1,p.country].filter(Boolean).join(", ")
+            }));
           });
           locResults.appendChild(btn);
         });
       } catch { locResults.textContent="Search failed. Try again."; }
     }
     let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
+
+    // NEW: robust sunrise/sunset fetcher
+    async function fetchSunTimes(lat, lon){
+      try{
+        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`);
+        if(!r.ok) throw new Error("sun "+r.status);
+        const j = await r.json();
+        const data = j.status==="OK" ? j.results : null;
+        const el = document.getElementById('sunTimes');
+        if(!el) return;
+        if(!data){ el.textContent = "—"; return; }
+        const sr = new Date(data.sunrise), ss = new Date(data.sunset);
+        const fmt = { hour:'numeric', minute:'2-digit' };
+        el.textContent = `Sunrise ${sr.toLocaleTimeString([],fmt)} · Sunset ${ss.toLocaleTimeString([],fmt)} · Daylight ${data.day_length}`;
+      }catch{
+        const el = document.getElementById('sunTimes'); if(el) el.textContent = "—";
+      }
+    }
 
     /* ------------------ CONTROLS ------------------ */
     document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){} try { fetchMarkets(); } catch(e){} });
@@ -594,8 +645,10 @@
         const m=JSON.parse(localStorage.getItem("wxManual")||"null"); if(m) loadWeather(m.lat,m.lon);
         const c=JSON.parse(localStorage.getItem("wx")||"null");
         if(c && Date.now()-c.t<30*60*1000){
-          if(!c.place){ reverse(c.lat,c.lon).then(p=>{ c.place=p; localStorage.setItem("wx", JSON.stringify(c)); wxPlace.textContent=p; }); }
-          wxPlace.textContent=c.place||"Locating…";
+          if(!c.place){
+            reverse(c.lat,c.lon).then(p=>{ if(p){ c.place=p; localStorage.setItem("wx", JSON.stringify(c)); wxPlace.textContent=p; }});
+          }
+          wxPlace.textContent=c.place||"Your location";
           wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`;
           wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`;
           wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`;
