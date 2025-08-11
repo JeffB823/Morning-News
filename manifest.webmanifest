@@ -1,0 +1,21 @@
+{
+  "name": "Morning News",
+  "short_name": "Morning",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/noto:newspaper.png?width=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://api.iconify.design/noto:newspaper.png?width=512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
