@@ -37,7 +37,6 @@
   </style>
 </head>
 <body class="h-full text-slate-900 dark:text-slate-100">
-  <!-- Header -->
   <header class="sticky top-0 z-50 glass bg-white/80 dark:bg-slate-950/75 border-b border-slate-200/70 dark:border-slate-800/70 safe-top">
     <div class="max-w-screen-sm mx-auto px-3 pt-1 pb-2 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -53,7 +52,6 @@
       </div>
     </div>
 
-    <!-- Search + Mode + Location -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
       <input id="filterBox" type="search" placeholder="Search…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
       <button id="locBtn" title="Use my location" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍</button>
@@ -64,12 +62,10 @@
       </select>
     </div>
 
-    <!-- Category chips -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 overflow-x-auto no-scrollbar">
       <div id="chips" class="flex gap-2"></div>
     </div>
 
-    <!-- Weather -->
     <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
       <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
         <div class="min-w-0">
@@ -85,16 +81,13 @@
     </div>
   </header>
 
-  <!-- Dashboard -->
   <section class="max-w-screen-sm mx-auto px-3 pt-2 pb-1 grid grid-cols-1 gap-2">
-    <!-- Need to know -->
     <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
       <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Need to know</div>
       <ul id="needToKnow" class="list-disc pl-5 text-[13px] text-slate-800 dark:text-slate-200 space-y-1">
         <li class="opacity-60">Loading top stories…</li>
       </ul>
     </div>
-    <!-- Markets + Quote -->
     <div class="grid grid-cols-3 gap-2">
       <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
         <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Markets</div>
@@ -107,14 +100,12 @@
         <div id="qod" class="text-[13px] italic text-slate-800 dark:text-slate-200">—</div>
       </div>
     </div>
-    <!-- Sunrise/Sunset -->
     <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
       <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Sunrise & sunset</div>
       <div id="sunTimes" class="text-[13px] text-slate-800 dark:text-slate-200">—</div>
     </div>
   </section>
 
-  <!-- Main -->
   <main class="max-w-screen-sm mx-auto px-3 pt-2 pb-24">
     <div id="status" class="mb-2 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400">Loading…</div>
     <div id="panel" class="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 shadow-glass">
@@ -123,7 +114,6 @@
     </div>
   </main>
 
-  <!-- Bottom dock -->
   <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
     <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
       <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
@@ -135,10 +125,8 @@
     </div>
   </nav>
 
-  <!-- Bookmarks FAB -->
   <button id="bmBtn" title="Bookmarks" class="fixed bottom-20 right-4 z-50 px-3 py-2 rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/80 text-xs shadow-glass">⭐︎ Bookmarks</button>
 
-  <!-- Reader -->
   <div id="reader" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
     <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 shadow-glass flex flex-col max-w-screen-sm mx-auto">
@@ -158,7 +146,6 @@
     </div>
   </div>
 
-  <!-- Manual location dialog -->
   <dialog id="locDialog" class="rounded-xl border border-slate-300/70 dark:border-slate-700/70 p-0 w-[92%] max-w-sm bg-white/95 dark:bg-slate-900/95">
     <form method="dialog">
       <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 text-sm font-semibold">Set location</div>
@@ -173,16 +160,13 @@
   </dialog>
 
   <script>
-    // Debug: surface any JS errors visibly
+    // show runtime errors in status (parse errors won't reach here)
     window.addEventListener('error', (e)=>{
       const box = document.getElementById('status');
       if (box) { box.textContent = 'Error: ' + (e.message || 'Script error'); }
       console.error('Runtime error:', e);
     });
 
-    // ----------------------------
-    // CONFIG
-    // ----------------------------
     const FEEDS = {
       "Top": [],
       "National News": [
@@ -221,13 +205,8 @@
       ]
     };
     const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI"];
-    const PAGE_SIZE = 5;
-    const MAX_PER_CAT = 60;
-    const TIMEOUT = 12000;
+    const PAGE_SIZE = 5, MAX_PER_CAT = 60, TIMEOUT = 12000;
 
-    // ----------------------------
-    // UTIL
-    // ----------------------------
     const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
     const allorigins = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
     const corsgit    = (u) => `https://cors.isomorphic-git.org/${u}`;
@@ -288,7 +267,6 @@
       catch(e3){ console.warn("Feed failed", url, e1, e2, e3); return []; }}}
     }
 
-    // Markets helpers
     function signNum(n){ return n>0?`+${n.toFixed(2)}`:n<0?`${n.toFixed(2)}`:`${n.toFixed(2)}`; }
     function pct(a,b){ if(!b) return "0.00%"; const p=((a-b)/b)*100; return (p>=0?"+":"")+p.toFixed(2)+"%"; }
     function colorize(el, delta){ if(!el) return; el.style.color = delta>0 ? "#16a34a" : delta<0 ? "#dc2626" : ""; }
@@ -311,9 +289,6 @@
       const el = document.getElementById('qod'); if(el) el.textContent = `“${q}” — ${a}`;
     }
 
-    // ----------------------------
-    // STATE
-    // ----------------------------
     let dataByCat = {};
     let bookmarks = JSON.parse(localStorage.getItem("bookmarks")||"[]");
     let current = ORDER[0], mode = "summaries", rendered = 0, filterQ = "";
@@ -324,9 +299,6 @@
     const modeSel = document.getElementById('modeSel');
     const filterBox = document.getElementById('filterBox');
 
-    // ----------------------------
-    // UI RENDER
-    // ----------------------------
     function chipButton(cat){
       const b=document.createElement('button');
       b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
@@ -397,15 +369,12 @@
       if (reset) list.innerHTML="";
       const slice = items.slice(rendered, rendered + PAGE_SIZE);
       if (reset && items.length===0){ for (let i=0;i<5;i++) list.appendChild(skeleRow()); }
-      else { slice.forEach(it => list.appendChild(rowView(it)); }
+      else { slice.forEach(it => list.appendChild(rowView(it))); }  <!-- fixed line -->
       rendered += slice.length;
       moreBtn.classList.toggle('hidden', rendered >= items.length);
       statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
     }
 
-    // ----------------------------
-    // LOADING
-    // ----------------------------
     async function loadCategory(cat){
       if (cat==="Top" || cat==="Bookmarks") return;
       const feeds = FEEDS[cat] || [];
@@ -420,9 +389,6 @@
       updateNeedToKnow();
     }
 
-    // ----------------------------
-    // NEED-TO-KNOW & MARKETS & SUN TIMES
-    // ----------------------------
     function updateNeedToKnow(){
       const ul = document.getElementById('needToKnow'); if(!ul) return;
       const cats = ORDER.filter(c => c!=="Top" && c!=="Bookmarks");
@@ -476,9 +442,6 @@
       }
     }
 
-    // ----------------------------
-    // READER & BOOKMARKS
-    // ----------------------------
     const reader = document.getElementById('reader');
     const readerBackdrop = document.getElementById('readerBackdrop');
     const readerTitle = document.getElementById('readerTitle');
@@ -512,9 +475,6 @@
     readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
     readerStar.addEventListener('click', ()=>{ if(readerItem) toggleBookmark(readerItem, readerStar); });
 
-    // ----------------------------
-    // WEATHER (GPS + manual)
-    // ----------------------------
     const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'), wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
     const locBtn = document.getElementById('locBtn'), locDialog = document.getElementById('locDialog'), locInput = document.getElementById('locInput'), locResults = document.getElementById('locResults');
     function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65].includes(code)) return "Rain"; if([80,81,82].includes(code)) return "Showers"; if([71,73,75].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
@@ -534,15 +494,11 @@
       navigator.geolocation.getCurrentPosition(pos=>{ const {latitude:lat,longitude:lon}=pos.coords||{}; if(typeof lat==="number"&&typeof lon==="number") loadWeather(lat,lon); }, err=>{ locDialog.showModal(); }, { enableHighAccuracy:true, timeout:10000, maximumAge:60000 });
     }
     locBtn.addEventListener('click', askGeo);
-    // manual city/ZIP search
     async function geocode(query){
       try{ const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`); const arr=j?.results||[]; if(arr.length===0){ locResults.textContent="No matches."; return; } locResults.innerHTML=""; arr.forEach(p=>{ const btn=document.createElement('button'); btn.className="block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800"; btn.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", "); btn.addEventListener('click', ()=>{ locDialog.close(); loadWeather(p.latitude, p.longitude); localStorage.setItem("wxManual", JSON.stringify({lat:p.latitude,lon:p.longitude})); }); locResults.appendChild(btn); }); } catch { locResults.textContent="Search failed. Try again."; }
     }
     let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
 
-    // ----------------------------
-    // CONTROLS & INTERACTION
-    // ----------------------------
     document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; } try { fetchMarkets(); } catch(e){ console.error(e); } });
     document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
     document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
@@ -553,12 +509,10 @@
     modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
     let t; filterBox.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ filterQ=filterBox.value||""; rendered=0; renderList(true); }, 180); });
 
-    // Pull-to-refresh
     let y0=null; window.addEventListener('touchstart', e=>{ if(document.scrollingElement.scrollTop===0) y0=e.touches[0].clientY; }, {passive:true});
     window.addEventListener('touchmove', e=>{ if(y0!==null && e.touches[0].clientY - y0 > 90){ y0=null; try{ loadAll(); }catch(e){ console.error(e);} try{ fetchMarkets(); }catch(e){ console.error(e);} } }, {passive:true});
     window.addEventListener('touchend', ()=>{ y0=null; }, {passive:true});
 
-    // Theme
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     const storedTheme = localStorage.getItem('theme');
     if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
@@ -567,20 +521,15 @@
       localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
     });
 
-    // ----------------------------
-    // BOOT
-    // ----------------------------
     (function init(){
       renderChips();
       quoteOfDay();
-      // cached weather/manual
       try{
         const m=JSON.parse(localStorage.getItem("wxManual")||"null"); if(m) loadWeather(m.lat,m.lon);
         const c=JSON.parse(localStorage.getItem("wx")||"null");
         if(c && Date.now()-c.t<30*60*1000){ wxPlace.textContent=c.place||(c.lat.toFixed(2)+", "+c.lon.toFixed(2)); wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`; wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`; wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`; wxCard.classList.remove("hidden"); fetchSunTimes(c.lat, c.lon); }
       }catch{}
       askGeo();
-      // initial list + loads
       for(let i=0;i<5;i++) list.appendChild(skeleRow());
       try { loadAll(); } catch(e){ console.error(e); const s=document.getElementById('status'); if(s) s.textContent='News failed to load'; }
       try { fetchMarkets(); } catch(e){ console.error(e); }
