@@ -4,19 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Morning News — Ultimate</title>
+  <meta name="description" content="Fast, elegant, single-file morning dashboard: national, Ohio, Columbus, home lending, AI — plus weather, markets, sunrise/sunset, bookmarks, and a reader.">
   <meta name="color-scheme" content="light dark">
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#111827">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind (with Typography plugin for .prose) -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] },
           boxShadow: { glass: '0 8px 24px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.06)' }
         }
-      },
-      darkMode: 'class'
+      }
     }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +45,7 @@
       .bg-thunder { background-image: linear-gradient(135deg,#111827,#0b1220); }
       .bg-night   { background-image: radial-gradient(1200px 600px at 50% -100px, #0f172a 0%, #0b1220 60%); }
     }
-    .glass { backdrop-filter: saturate(140%) blur(10px); }
+    .glass { -webkit-backdrop-filter: saturate(140%) blur(10px); backdrop-filter: saturate(140%) blur(10px); }
     .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
     @media (prefers-color-scheme: dark) { .thumb { background:#0b1220; } }
     .line-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -89,8 +91,8 @@
       <div id="chips" class="flex gap-2"></div>
     </div>
 
-    <!-- Weather -->
-    <div class="max-w-screen-sm mx_auto px-3 pb-3 space-y-2">
+    <!-- Weather (FIXED: mx-auto typo) -->
+    <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
       <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
         <div class="min-w-0">
           <div id="wxPlace" class="font-semibold truncate">—</div>
@@ -140,9 +142,9 @@
     </div>
   </main>
 
-  <!-- Bottom dock -->
+  <!-- Bottom dock (FIXED: text-[11px]) -->
   <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
-    <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text:[11px]">
+    <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
       <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
       <button id="dockNat"  class="flex flex-col items-center gap-1 py-1">🌎<span>National</span></button>
       <button id="dockOhio" class="flex flex-col items-center gap-1 py-1">🗺️<span>Ohio</span></button>
@@ -165,6 +167,7 @@
           <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
         </div>
         <div class="flex items-center gap-2">
+          <button id="readerShare" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Share</button>
           <button id="readerStar" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">⭐︎</button>
           <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
           <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
@@ -233,9 +236,10 @@
         "https://ai.googleblog.com/feeds/posts/default?alt=rss",
         "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
         "https://arstechnica.com/information-technology/feed/"
-      ]
+      ],
+      "Bookmarks": []
     };
-    const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI"];
+    const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI","Bookmarks"]; // (ADDED Bookmarks chip)
     const PAGE_SIZE = 5, MAX_PER_CAT = 60, TIMEOUT = 12000;
 
     /* ------------------ UTIL ------------------ */
@@ -276,7 +280,7 @@
       const r=await fetch(rss2json(url));
       if(!r.ok) throw new Error("rss2json "+r.status);
       const j=await r.json();
-      return (j.items||[]).map(x=>({title:x.title, link:x.link, desc:x.description || x.content || x.content_html || "", pubDate:x.pubDate||x.pub_date||x.date||x.published, source:j.feed?.title || (new URL(url)).hostname, thumb:guessThumb(x) }));
+      return (j.items||[]).map(x=>({title:x.title, link:x.link, desc:x.description || x.content || x.content_html || "", pubDate:x.pubDate||x.pub_date||x.date||x.published, source:j.feed?.title || (new URL(url)).hostname, thumb:guessThumb({thumbnail:x.thumbnail, enclosure:x.enclosure, link:x.link, desc:x.description}) }));
     }
     async function loadFeedXML(url, proxy){
       const txt = await fetchText(proxy(url));
@@ -284,12 +288,14 @@
       const nodes = Array.from(doc.querySelectorAll("item,entry"));
       return nodes.map(node=>{
         const g = sel => node.querySelector(sel)?.textContent || "";
-        const linkNode = node.querySelector("link");
+        // Prefer Atom <link rel="alternate"> when present
         let link = g("link");
-        if (linkNode && linkNode.getAttribute("href")) link = linkNode.getAttribute("href");
+        const alt = node.querySelector('link[rel="alternate"]');
+        if (alt && alt.getAttribute('href')) link = alt.getAttribute('href');
         const enclosure = node.querySelector("enclosure");
         const thumb = enclosure?.getAttribute("url") || "";
-        return { title: g("title"), link, desc:g("description")||g("content")||g("summary"), pubDate:g("pubDate")||g("updated")||g("published"), source: (doc.querySelector("channel>title")?.textContent) || (new URL(url)).hostname, thumb };
+        const desc = g("description")||g("content")||g("summary")||"";
+        return { title: g("title"), link, desc, pubDate:g("pubDate")||g("updated")||g("published"), source: (doc.querySelector("channel>title")?.textContent) || (new URL(url)).hostname, thumb };
       });
     }
     async function loadFeed(url){
@@ -331,14 +337,16 @@
     function setWeatherBackground(code){
       const cls = weatherClassFrom(code);
       const body = document.body;
-      body.className = body.className.split(' ').filter(c=>!/^bg-(clear|clouds|rain|snow|fog|thunder|night)$/.test(c)).join(' ').trim();
+      body.className = body.className.split(' ').filter(c=>!/^(bg-(clear|clouds|rain|snow|fog|thunder|night))$/.test(c)).join(' ').trim();
       body.classList.add(cls);
     }
 
     /* ------------------ STATE ------------------ */
     let dataByCat = {};
     let bookmarks = JSON.parse(localStorage.getItem("bookmarks")||"[]");
-    let current = ORDER[0], mode = "summaries", rendered = 0, filterQ = "";
+    let current = localStorage.getItem('currentCat') || ORDER[0];
+    let mode = localStorage.getItem('mode') || 'summaries';
+    let rendered = 0, filterQ = "";
     const list = document.getElementById('list'), statusEl = document.getElementById('status'), chips = document.getElementById('chips'),
           moreBtn = document.getElementById('moreBtn'), modeSel = document.getElementById('modeSel'), filterBox = document.getElementById('filterBox');
 
@@ -347,10 +355,10 @@
       const b=document.createElement('button');
       b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
       b.textContent=cat.replace(" News","");
-      b.addEventListener('click', ()=>{ current=cat; rendered=0; renderList(true); });
+      b.addEventListener('click', ()=>{ current=cat; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
       return b;
     }
-    function renderChips(){ chips.innerHTML=""; ORDER.forEach(cat => chips.appendChild(chipButton(cat))); }
+    function renderChips(){ chips.innerHTML=""; ORDER.forEach(cat => chips.appendChild(chipButton(cat))); modeSel.value = mode; }
     function skeleRow(){
       const li=document.createElement('li'); li.className="p-3";
       li.innerHTML=`<div class="flex items-start gap-3">
@@ -368,23 +376,43 @@
       const sum = summarizeAdaptive(it.desc);
       const long = sum.length > 550 ? 'line-7' : sum.length > 380 ? 'line-5' : 'line-3';
       const starred = bookmarks.some(b=>b.link===it.link);
-      li.innerHTML=`<div class="flex items-start gap-3">
-        <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
-        <div class="min-w-0 w-full">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
-              <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
+
+      if (mode === 'headlines') {
+        li.innerHTML = `<div class="flex items-start gap-3">
+          <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <div class="min-w-0 w-full">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
+              </div>
+              <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
             </div>
-            <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
+            <div class="mt-1 flex gap-3">
+              <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
+              <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
+            </div>
           </div>
-          <div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${long}">${sum}</div>
-          <div class="mt-1 flex gap-3">
-            <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
-            <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
+        </div>`;
+      } else {
+        li.innerHTML=`<div class="flex items-start gap-3">
+          <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <div class="min-w-0 w-full">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
+              </div>
+              <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
+            </div>
+            <div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${long}">${sum}</div>
+            <div class="mt-1 flex gap-3">
+              <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
+              <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
+            </div>
           </div>
-        </div>
-      </div>`;
+        </div>`;
+      }
       li.querySelector('[data-read]').addEventListener('click', ()=>openReader(it));
       li.querySelector('[data-star]').addEventListener('click', ()=>toggleBookmark(it, li.querySelector('[data-star]')));
       return li;
@@ -417,11 +445,12 @@
       rendered += slice.length;
       moreBtn.classList.toggle('hidden', rendered >= items.length);
       statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
+      if (mode==='reader' && reset && items[0]) openReader(items[0]);
     }
 
     /* ------------------ LOADERS ------------------ */
     async function loadCategory(cat){
-      if (cat==="Top" || cat==="Bookmarks") return;
+      if (cat==="Top") return; // Bookmarks handled from localStorage
       const feeds = FEEDS[cat] || [];
       const results = await Promise.allSettled(feeds.map(loadFeed));
       let merged=[]; for(const r of results) if(r.status==="fulfilled") merged=merged.concat(r.value);
@@ -429,7 +458,7 @@
       if (cat===current) { rendered=0; renderList(true); }
     }
     async function loadAll(){
-      for (const cat of ORDER.filter(c=>c!=="Top")) await loadCategory(cat);
+      for (const cat of ORDER.filter(c=>c!=="Top" && c!=="Bookmarks")) await loadCategory(cat);
       rendered=0; renderList(true);
       updateNeedToKnow();
     }
@@ -478,7 +507,7 @@
           readerTitle = document.getElementById('readerTitle'), readerMeta = document.getElementById('readerMeta'),
           readerImg = document.getElementById('readerImg'), readerBody = document.getElementById('readerBody'),
           readerOpen = document.getElementById('readerOpen'), readerClose = document.getElementById('readerClose'),
-          readerStar = document.getElementById('readerStar');
+          readerStar = document.getElementById('readerStar'), readerShare = document.getElementById('readerShare');
     let readerItem = null;
     function toggleBookmark(it, btn=null){
       const idx = bookmarks.findIndex(b=>b.link===it.link);
@@ -489,7 +518,7 @@
     }
     function openReader(it){
       readerItem = it;
-      modeSel.value='reader'; mode='reader';
+      modeSel.value='reader'; mode='reader'; localStorage.setItem('mode', mode);
       readerTitle.textContent = it.title || "";
       readerMeta.textContent = `${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}`;
       if (it.thumb) { readerImg.src=it.thumb; readerImg.classList.remove('hidden'); } else readerImg.classList.add('hidden');
@@ -502,6 +531,12 @@
     readerBackdrop.addEventListener('click', ()=>reader.classList.add('hidden'));
     readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
     readerStar.addEventListener('click', ()=>{ if(readerItem) toggleBookmark(readerItem, readerStar); });
+    readerShare.addEventListener('click', async ()=>{
+      try{
+        if (navigator.share && readerItem) await navigator.share({title: readerItem.title, text: readerItem.source, url: readerItem.link});
+        else if (readerItem) { await navigator.clipboard.writeText(readerItem.link); alert('Link copied to clipboard'); }
+      } catch {}
+    });
 
     /* ------------------ WEATHER (GPS + manual + background) ------------------ */
     const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'),
@@ -512,7 +547,6 @@
     function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65,80,81,82].includes(code)) return "Rain"; if([71,73,75,85,86].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
     async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
 
-    // NEW: never return lat/long string; return name or null
     async function reverse(lat,lon){
       try{
         const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);
@@ -522,7 +556,6 @@
       } catch { return null; }
     }
 
-    // NEW: use friendly name or "Your location"; always call sunrise/sunset
     async function loadWeather(lat,lon){
       try{
         const j=await jget(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto`);
@@ -580,7 +613,6 @@
     }
     let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
 
-    // NEW: robust sunrise/sunset fetcher
     async function fetchSunTimes(lat, lon){
       try{
         const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`);
@@ -600,13 +632,28 @@
 
     /* ------------------ CONTROLS ------------------ */
     document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){} try { fetchMarkets(); } catch(e){} });
-    document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockOhio').addEventListener('click', ()=>{ current="Ohio News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockLocal').addEventListener('click', ()=>{ current="Columbus News"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockHL').addEventListener('click', ()=>{ current="Home Lending"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockAI').addEventListener('click', ()=>{ current="AI"; rendered=0; renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    modeSel.addEventListener('change', ()=>{ mode=modeSel.value; if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
+    document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockOhio').addEventListener('click', ()=>{ current="Ohio News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockLocal').addEventListener('click', ()=>{ current="Columbus News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockHL').addEventListener('click', ()=>{ current="Home Lending"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('dockAI').addEventListener('click', ()=>{ current="AI"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('bmBtn').addEventListener('click', ()=>{ current='Bookmarks'; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    function updateThemeColor(){ const dark = document.documentElement.classList.contains('dark'); if(themeMeta) themeMeta.setAttribute('content', dark ? '#0b1220' : '#ffffff'); }
+
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedTheme = localStorage.getItem('theme');
+    if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
+    updateThemeColor();
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
+      updateThemeColor();
+    });
+
+    modeSel.addEventListener('change', ()=>{ mode=modeSel.value; localStorage.setItem('mode', mode); if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
     let t; filterBox.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ filterQ=filterBox.value||""; rendered=0; renderList(true); }, 180); });
 
     // Pull-to-refresh
@@ -619,23 +666,14 @@
       let sx=null, sy=null, handled=false;
       const THRESH_X=60, RATIO=1.8;
       function switchBy(offset){
-        const cats = ORDER.filter(c=>c!=='Bookmarks');
+        const cats = ORDER; // include Bookmarks in swipe order now
         const idx = cats.indexOf(current); if(idx<0) return;
-        current = cats[(idx+offset+cats.length)%cats.length]; rendered=0; renderList(true);
+        current = cats[(idx+offset+cats.length)%cats.length]; rendered=0; localStorage.setItem('currentCat', current); renderList(true);
       }
       window.addEventListener('touchstart', e=>{ if(e.touches.length!==1) return; handled=false; sx=e.touches[0].clientX; sy=e.touches[0].clientY; }, {passive:true});
       window.addEventListener('touchmove', e=>{ if(sx===null||sy===null||handled) return; const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy; if(Math.abs(dx)>THRESH_X && Math.abs(dx)>Math.abs(dy)*RATIO){ handled=true; if(dx<0) switchBy(+1); else switchBy(-1); } }, {passive:true});
       window.addEventListener('touchend', ()=>{ sx=sy=null; handled=false; }, {passive:true});
     })();
-
-    // Theme toggle
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const storedTheme = localStorage.getItem('theme');
-    if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
-    document.getElementById('themeBtn').addEventListener('click', ()=>{
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
-    });
 
     /* ------------------ BOOT ------------------ */
     (function init(){
@@ -657,15 +695,19 @@
           fetchSunTimes(c.lat, c.lon);
         }
       }catch{}
-      askGeo();
+      // Ask for location on first run
+      if(!localStorage.getItem('askedGeoOnce')){ localStorage.setItem('askedGeoOnce','1'); askGeo(); }
+
       for(let i=0;i<5;i++) list.appendChild(skeleRow());
       try { loadAll(); } catch(e){}
       try { fetchMarkets(); } catch(e){}
     })();
 
-    // Register PWA service worker
+    // Minimal PWA service worker (inline via Blob so you don't need a separate file)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+      const swCode = `const CACHE='mn-v1';const CORE=[self.location.href];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin===location.origin){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return resp;})).catch(()=>caches.match('/')));} });`;
+      const blob = new Blob([swCode], {type: 'text/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
     }
   </script>
 </body>
