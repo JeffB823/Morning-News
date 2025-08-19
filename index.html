@@ -4,11 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Morning News — Ultimate</title>
-  <meta name="description" content="Fast, elegant, single-file morning dashboard: national, Ohio, Columbus, home lending, AI — plus weather, markets, sunrise/sunset, bookmarks, and a reader.">
+  <meta name="description" content="Fast, elegant, single-file morning news feed with weather, sunrise/sunset, and markets.">
   <meta name="color-scheme" content="light dark">
-  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#111827">
-  <!-- Tailwind (with Typography plugin for .prose) -->
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script>
     tailwind.config = {
@@ -25,41 +23,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    /* Weather-driven backgrounds (light) */
     body { background: linear-gradient(135deg,#f8fafc,#eef2ff); background-attachment: fixed; transition: background 600ms cubic-bezier(.2,.8,.2,1); }
-    .bg-clear   { background-image: linear-gradient(135deg,#e6f7ff,#fff9db); }
-    .bg-clouds  { background-image: linear-gradient(135deg,#e5e7eb,#f1f5f9); }
-    .bg-rain    { background-image: linear-gradient(135deg,#dbeafe,#e5e7eb); }
-    .bg-snow    { background-image: linear-gradient(135deg,#f8fafc,#e2e8f0); }
-    .bg-fog     { background-image: linear-gradient(135deg,#eef2f7,#e2e8f0); }
-    .bg-thunder { background-image: linear-gradient(135deg,#fde68a,#f1f5f9); }
-    .bg-night   { background-image: radial-gradient(1200px 600px at 50% -100px, #1f2937 0%, #0b1220 60%); }
-    /* Dark scheme */
-    @media (prefers-color-scheme: dark) {
-      body { background: linear-gradient(135deg,#0b1220,#111827); }
-      .bg-clear   { background-image: linear-gradient(135deg,#0b1220,#0f172a); }
-      .bg-clouds  { background-image: linear-gradient(135deg,#111827,#0b1220); }
-      .bg-rain    { background-image: linear-gradient(135deg,#0b1220,#0f172a); }
-      .bg-snow    { background-image: linear-gradient(135deg,#0b1220,#1f2937); }
-      .bg-fog     { background-image: linear-gradient(135deg,#0b1220,#111827); }
-      .bg-thunder { background-image: linear-gradient(135deg,#111827,#0b1220); }
-      .bg-night   { background-image: radial-gradient(1200px 600px at 50% -100px, #0f172a 0%, #0b1220 60%); }
-    }
-    .glass { -webkit-backdrop-filter: saturate(140%) blur(10px); backdrop-filter: saturate(140%) blur(10px); }
-    .thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #e2e8f0; }
-    @media (prefers-color-scheme: dark) { .thumb { background:#0b1220; } }
-    .line-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-    .line-5 { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
-    .line-7 { display:-webkit-box; -webkit-line-clamp:7; -webkit-box-orient:vertical; overflow:hidden; }
+    .bg-clear{background-image:linear-gradient(135deg,#e6f7ff,#fff9db)}.bg-clouds{background-image:linear-gradient(135deg,#e5e7eb,#f1f5f9)}.bg-rain{background-image:linear-gradient(135deg,#dbeafe,#e5e7eb)}.bg-snow{background-image:linear-gradient(135deg,#f8fafc,#e2e8f0)}.bg-fog{background-image:linear-gradient(135deg,#eef2f7,#e2e8f0)}.bg-thunder{background-image:linear-gradient(135deg,#fde68a,#f1f5f9)}.bg-night{background-image:radial-gradient(1200px 600px at 50% -100px,#1f2937 0%,#0b1220 60%)}
+    @media (prefers-color-scheme: dark) { body{background:linear-gradient(135deg,#0b1220,#111827)} .bg-clear{background-image:linear-gradient(135deg,#0b1220,#0f172a)} .bg-clouds{background-image:linear-gradient(135deg,#111827,#0b1220)} .bg-rain{background-image:linear-gradient(135deg,#0b1220,#0f172a)} .bg-snow{background-image:linear-gradient(135deg,#0b1220,#1f2937)} .bg-fog{background-image:linear-gradient(135deg,#0b1220,#111827)} .bg-thunder{background-image:linear-gradient(135deg,#111827,#0b1220)} .bg-night{background-image:radial-gradient(1200px 600px at 50% -100px,#0f172a 0%,#0b1220 60%)} }
+    .glass{-webkit-backdrop-filter:saturate(140%) blur(10px);backdrop-filter:saturate(140%) blur(10px)}
+    .thumb{width:60px;height:60px;object-fit:cover;border-radius:12px;background:#e2e8f0}
+    @media (prefers-color-scheme: dark){.thumb{background:#0b1220}}
+    .line-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-    .safe-top{ padding-top: calc(env(safe-area-inset-top) + 6px); }
-    .safe-bottom{ padding-bottom: calc(env(safe-area-inset-bottom) + 6px); }
-    .skeleton { animation: pulse 1.2s ease-in-out infinite; background: linear-gradient(90deg, rgba(148,163,184,.15), rgba(148,163,184,.05), rgba(148,163,184,.15)); background-size: 200% 100%; }
-    @keyframes pulse { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .safe-top{padding-top:calc(env(safe-area-inset-top)+6px)}.safe-bottom{padding-bottom:calc(env(safe-area-inset-bottom)+6px)}
+    .skeleton{animation:pulse 1.2s ease-in-out infinite;background:linear-gradient(90deg,rgba(148,163,184,.15),rgba(148,163,184,.05),rgba(148,163,184,.15));background-size:200% 100%}@keyframes pulse{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .ticker{white-space:nowrap;overflow:hidden}.ticker__inner{display:inline-block;padding-left:100%;animation:scroll 30s linear infinite}
+    @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+    .up{color:#16a34a}.down{color:#dc2626}
   </style>
 </head>
 <body class="h-full text-slate-900 dark:text-slate-100">
-  <!-- Header -->
   <header class="sticky top-0 z-50 glass bg-white/80 dark:bg-slate-950/75 border-b border-slate-200/70 dark:border-slate-800/70 safe-top">
     <div class="max-w-screen-sm mx-auto px-3 pt-1 pb-2 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
@@ -70,28 +49,18 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
+        <div class="text-[11px] text-slate-500 dark:text-slate-400" id="lastRefresh" aria-live="polite">—</div>
         <button id="themeBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Theme</button>
         <button id="refreshBtn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Refresh</button>
       </div>
     </div>
-
-    <!-- Search + Mode + Location -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 flex items-stretch gap-2">
       <input id="filterBox" type="search" placeholder="Search…" class="flex-1 px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-900/70 outline-none">
-      <button id="locBtn" title="Use my location" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">📍</button>
-      <select id="modeSel" class="px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs">
-        <option value="headlines">Headlines</option>
-        <option value="summaries" selected>Summaries</option>
-        <option value="reader">Reader</option>
-      </select>
+      <button id="locBtn" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs" title="Use my location">📍</button>
     </div>
-
-    <!-- Category chips -->
     <div class="max-w-screen-sm mx-auto px-3 pb-2 overflow-x-auto no-scrollbar">
       <div id="chips" class="flex gap-2"></div>
     </div>
-
-    <!-- Weather (FIXED: mx-auto typo) -->
     <div class="max-w-screen-sm mx-auto px-3 pb-3 space-y-2">
       <div id="wxCard" class="hidden rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-sm flex items-center justify-between shadow-glass">
         <div class="min-w-0">
@@ -105,45 +74,49 @@
       </div>
       <div id="wxHint" class="text-[11px] text-slate-500 dark:text-slate-400">Weather: tap 📍 to allow location or set a city/ZIP.</div>
     </div>
+<!-- Markets ticker (TradingView) -->
+<div class="max-w-screen-sm mx-auto px-3 pb-2">
+  <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 p-0 overflow-hidden">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+        "symbols": [
+          { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+          { "proName": "DJI", "title": "Dow 30" },
+          { "proName": "NASDAQ:IXIC", "title": "Nasdaq" },
+          { "proName": "CRYPTO:BTCUSD", "title": "Bitcoin" },
+          { "proName": "CRYPTO:ETHUSD", "title": "Ethereum" }
+        ],
+        "showSymbolLogo": true,
+        "colorTheme": "light",
+        "isTransparent": true,
+        "displayMode": "adaptive",
+        "locale": "en"
+      }
+      </script>
+    </div>
+  </div>
+</div>
+</div>
+    </div>
   </header>
+  <section class="max-w-screen-sm mx-auto px-3 pt-2 pb-1 space-y-2" aria-label="Dashboard cards">
 
-  <!-- Dashboard -->
-  <section class="max-w-screen-sm mx-auto px-3 pt-2 pb-1 grid grid-cols-1 gap-2">
     <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
-      <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Need to know</div>
-      <ul id="needToKnow" class="list-disc pl-5 text-[13px] text-slate-800 dark:text-slate-200 space-y-1">
-        <li class="opacity-60">Loading top stories…</li>
-      </ul>
-    </div>
-    <div class="grid grid-cols-3 gap-2">
-      <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
-        <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Markets</div>
-        <div id="mkSP" class="text-[13px]">S&P 500: —</div>
-        <div id="mkDJI" class="text-[13px]">Dow: —</div>
-        <div id="mkBTC" class="text-[13px]">BTC: —</div>
-      </div>
-      <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass col-span-2">
-        <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Quote of the day</div>
-        <div id="qod" class="text-[13px] italic text-slate-800 dark:text-slate-200">—</div>
-      </div>
-    </div>
-    <div class="rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 shadow-glass">
-      <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Sunrise & sunset</div>
-      <div id="sunTimes" class="text-[13px] text-slate-800 dark:text-slate-200">—</div>
+      <div class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Quote</div>
+      <div id="qod" class="text-[13px] italic text-slate-800 dark:text-slate-200">—</div>
     </div>
   </section>
-
-  <!-- Main -->
-  <main class="max-w-screen-sm mx-auto px-3 pt-2 pb-24">
+  <main class="max-w-screen-sm mx-auto px-3 pt-2 pb-24" aria-label="News feed">
     <div id="status" class="mb-2 rounded-xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 p-3 text-xs text-slate-600 dark:text-slate-400">Loading…</div>
     <div id="panel" class="rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/70 shadow-glass">
       <ol id="list" class="divide-y divide-slate-200/70 dark:divide-slate-800/70" aria-live="polite"></ol>
+      <div id="emptyState" class="hidden p-3 text-sm text-slate-600 dark:text-slate-400">No items for this category. Try Refresh or another section.</div>
       <button id="moreBtn" class="w-full py-3 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Load more</button>
     </div>
   </main>
-
-  <!-- Bottom dock (FIXED: text-[11px]) -->
-  <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom">
+  <nav class="fixed bottom-0 inset-x-0 z-50 glass bg-white/80 dark:bg-slate-950/80 border-t border-slate-200/70 dark:border-slate-800/70 safe-bottom" aria-label="Sections">
     <div class="max-w-screen-sm mx-auto px-6 py-2 grid grid-cols-6 text-[11px]">
       <button id="dockHome" class="flex flex-col items-center gap-1 py-1 font-semibold">🏠<span>Top</span></button>
       <button id="dockNat"  class="flex flex-col items-center gap-1 py-1">🌎<span>National</span></button>
@@ -153,12 +126,7 @@
       <button id="dockAI"   class="flex flex-col items-center gap-1 py-1">🤖<span>AI</span></button>
     </div>
   </nav>
-
-  <!-- Bookmarks FAB -->
-  <button id="bmBtn" title="Bookmarks" class="fixed bottom-20 right-4 z-50 px-3 py-2 rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/80 text-xs shadow-glass">⭐︎ Bookmarks</button>
-
-  <!-- Reader -->
-  <div id="reader" class="fixed inset-0 z-50 hidden">
+  <div id="reader" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
     <div class="absolute inset-0 bg-black/40" id="readerBackdrop"></div>
     <div class="absolute inset-x-0 bottom-0 top-[8dvh] rounded-t-2xl border border-slate-300/70 dark:border-slate-700/70 bg-white dark:bg-slate-900 shadow-glass flex flex-col max-w-screen-sm mx-auto">
       <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 flex items-start justify-between gap-3">
@@ -167,8 +135,6 @@
           <div id="readerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5"></div>
         </div>
         <div class="flex items-center gap-2">
-          <button id="readerShare" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Share</button>
-          <button id="readerStar" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">⭐︎</button>
           <a id="readerOpen" target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Open</a>
           <button id="readerClose" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs">Close</button>
         </div>
@@ -177,8 +143,6 @@
       <div id="readerBody" class="prose prose-sm dark:prose-invert max-w-none px-3 pb-3 overflow-y-auto" style="max-height: 60dvh;"></div>
     </div>
   </div>
-
-  <!-- Manual location dialog -->
   <dialog id="locDialog" class="rounded-xl border border-slate-300/70 dark:border-slate-700/70 p-0 w-[92%] max-w-sm bg-white/95 dark:bg-slate-900/95">
     <form method="dialog">
       <div class="p-3 border-b border-slate-200/70 dark:border-slate-800/70 text-sm font-semibold">Set location</div>
@@ -191,15 +155,7 @@
       </div>
     </form>
   </dialog>
-
   <script>
-    // Show runtime errors in status (parse errors won’t reach here)
-    window.addEventListener('error', (e)=>{
-      const box = document.getElementById('status');
-      if (box) { box.textContent = 'Error: ' + (e.message || 'Script error'); }
-      console.error('Runtime error:', e);
-    });
-
     /* ------------------ CONFIG ------------------ */
     const FEEDS = {
       "Top": [],
@@ -212,12 +168,14 @@
         "https://www.axios.com/feeds/feed.rss"
       ],
       "Ohio News": [
+        "https://news.google.com/rss/search?q=Ohio&hl=en-US&gl=US&ceid=US:en",
         "https://ohiocapitaljournal.com/feed/",
         "https://www.cleveland.com/ohio/rss.xml",
         "https://www.dispatch.com/arcio/rss/category/news/?outputType=xml",
         "https://www.cincinnati.com/rss/news"
       ],
       "Columbus News": [
+        "https://news.google.com/rss/search?q=Columbus%20Ohio&hl=en-US&gl=US&ceid=US:en",
         "https://news.wosu.org/rss",
         "https://www.nbc4i.com/feed/",
         "https://abc6onyourside.com/rss",
@@ -225,490 +183,123 @@
         "https://www.columbusunderground.com/feed/"
       ],
       "Home Lending": [
+        "https://news.google.com/rss/search?q=mortgage%20OR%20%22home%20lending%22&hl=en-US&gl=US&ceid=US:en",
         "https://www.housingwire.com/section/mortgage/feed/",
         "https://www.mortgagenewsdaily.com/rss",
         "https://www.nationalmortgagenews.com/rss",
         "https://www.fhfa.gov/Feeds/News"
       ],
       "AI": [
-        "https://www.technologyreview.com/feed/",
+        "https://news.google.com/rss/search?q=%22artificial%20intelligence%22%20OR%20AI&hl=en-US&gl=US&ceid=US:en",
         "https://openai.com/blog/rss",
         "https://ai.googleblog.com/feeds/posts/default?alt=rss",
         "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
         "https://arstechnica.com/information-technology/feed/"
-      ],
-      "Bookmarks": []
+      ]
     };
-    const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI","Bookmarks"]; // (ADDED Bookmarks chip)
-    const PAGE_SIZE = 5, MAX_PER_CAT = 60, TIMEOUT = 12000;
-
+    const ORDER = ["Top","National News","Ohio News","Columbus News","Home Lending","AI"];
+    const PAGE_SIZE = 7, MAX_PER_CAT = 70, TIMEOUT = 15000;
     /* ------------------ UTIL ------------------ */
-    const rss2json = (u) => `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(u)}`;
-    const allorigins = (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
-    const corsgit    = (u) => `https://cors.isomorphic-git.org/${u}`;
-    function cleanHtml(html){ return (html||"").replace(/<script[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style[^>]*>[\s\S]*?<\/style>/gi,"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(); }
-    function summarizeAdaptive(text){
-      const t = cleanHtml(text||"");
-      const len = t.length;
-      const cap = len > 1500 ? 900 : len > 800 ? 700 : len > 400 ? 500 : 300;
-      const parts = t.split(/(?<=[.!?])\s+/).filter(Boolean);
-      let out=""; for(const s of parts){ if((out+(out?" ":"")+s).length<=cap) out+=(out?" ":"")+s; else break; }
-      return out || t.slice(0, cap);
-    }
-    function timeAgo(s){ const d=new Date(s); if(isNaN(d)) return ""; const sec=Math.floor((Date.now()-d)/1000); const pairs=[["yr",31536000],["mo",2592000],["d",86400],["h",3600],["m",60],["s",1]]; for(const [n,v] of pairs){ const k=Math.floor(sec/v); if(k>=1) return k+n; } return "now"; }
-    function guessThumb(x){
-      const link = x.link || ""; let domain = ""; try { domain = new URL(link).origin; } catch {}
-      const f = x.thumbnail || x.enclosure?.link || x.enclosure?.url || x.enclosure?.thumbnail || x.enclosure;
-      if (f && typeof f === "string") return f;
-      if (x.desc){ const m=x.desc.match(/<img[^>]+src=["']([^"']+)["']/i); if(m&&m[1]) return m[1]; }
-      return domain?`https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(domain)}`:"";
-    }
-    function dedupe(items){
-      const seen = new Set(), out=[];
-      for(const it of items){
-        const key = (it.title||"").trim().toLowerCase()+"|"+(it.link||"");
-        if(!seen.has(key)){ seen.add(key); out.push(it); }
-      }
-      return out;
-    }
-    async function fetchText(url){
-      const ctrl=new AbortController(); const id=setTimeout(()=>ctrl.abort(), TIMEOUT);
-      try{ const r=await fetch(url,{signal:ctrl.signal}); if(!r.ok) throw new Error("HTTP "+r.status); return await r.text(); }
-      finally{ clearTimeout(id); }
-    }
-    async function loadFeedJSON(url){
-      const r=await fetch(rss2json(url));
-      if(!r.ok) throw new Error("rss2json "+r.status);
-      const j=await r.json();
-      return (j.items||[]).map(x=>({title:x.title, link:x.link, desc:x.description || x.content || x.content_html || "", pubDate:x.pubDate||x.pub_date||x.date||x.published, source:j.feed?.title || (new URL(url)).hostname, thumb:guessThumb({thumbnail:x.thumbnail, enclosure:x.enclosure, link:x.link, desc:x.description}) }));
-    }
-    async function loadFeedXML(url, proxy){
-      const txt = await fetchText(proxy(url));
-      const doc = new DOMParser().parseFromString(txt, "application/xml");
-      const nodes = Array.from(doc.querySelectorAll("item,entry"));
-      return nodes.map(node=>{
-        const g = sel => node.querySelector(sel)?.textContent || "";
-        // Prefer Atom <link rel="alternate"> when present
-        let link = g("link");
-        const alt = node.querySelector('link[rel="alternate"]');
-        if (alt && alt.getAttribute('href')) link = alt.getAttribute('href');
-        const enclosure = node.querySelector("enclosure");
-        const thumb = enclosure?.getAttribute("url") || "";
-        const desc = g("description")||g("content")||g("summary")||"";
-        return { title: g("title"), link, desc, pubDate:g("pubDate")||g("updated")||g("published"), source: (doc.querySelector("channel>title")?.textContent) || (new URL(url)).hostname, thumb };
-      });
-    }
-    async function loadFeed(url){
-      try { return await loadFeedJSON(url); }
-      catch(e1){ try { return await loadFeedXML(url, allorigins); }
-      catch(e2){ try { return await loadFeedXML(url, corsgit); }
-      catch(e3){ console.warn("Feed failed", url, e1, e2, e3); return []; }}}
-    }
-
-    /* -------- Markets / Quote / Weather helpers -------- */
-    function colorize(el, delta){ if(!el) return; el.style.color = delta>0 ? "#16a34a" : delta<0 ? "#dc2626" : ""; }
-    function quoteOfDay(){
-      const quotes = [
-        ["Make each day your masterpiece.","John Wooden"],
-        ["The secret of getting ahead is getting started.","Mark Twain"],
-        ["What you do every day matters more than what you do once in a while.","Gretchen Rubin"],
-        ["The future depends on what you do today.","Mahatma Gandhi"],
-        ["Action is the foundational key to all success.","Pablo Picasso"],
-        ["Well done is better than well said.","Benjamin Franklin"],
-        ["It always seems impossible until it’s done.","Nelson Mandela"],
-        ["Do the hard things first.","Brian Tracy"],
-        ["The best way out is always through.","Robert Frost"],
-        ["If it costs you your peace, it’s too expensive.","Unknown"]
-      ];
-      const i = Math.floor(Date.now()/86400000)%quotes.length;
-      const [q,a] = quotes[i];
-      const el = document.getElementById('qod'); if(el) el.textContent = `“${q}” — ${a}`;
-    }
-    function isNight(){ const h = new Date().getHours(); return (h < 6 || h >= 20); }
-    function weatherClassFrom(code){
-      if ([95,96,99].includes(code)) return 'bg-thunder';
-      if ([61,63,65,80,81,82].includes(code)) return 'bg-rain';
-      if ([71,73,75,85,86].includes(code)) return 'bg-snow';
-      if ([45,48].includes(code)) return 'bg-fog';
-      if ([0,1,2].includes(code)) return (isNight() ? 'bg-night' : 'bg-clear');
-      if ([3].includes(code)) return 'bg-clouds';
-      return 'bg-clouds';
-    }
-    function setWeatherBackground(code){
-      const cls = weatherClassFrom(code);
-      const body = document.body;
-      body.className = body.className.split(' ').filter(c=>!/^(bg-(clear|clouds|rain|snow|fog|thunder|night))$/.test(c)).join(' ').trim();
-      body.classList.add(cls);
-    }
-
+    const viaJina = (u) => 'https://r.jina.ai/http://' + u.replace(/^https?:\/\//,'');
+    const allorigins= (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`;
+    const corsgit   = (u) => `https://cors.isomorphic-git.org/${u}`;
+    let __simulateOffline = false;
+    function netFetch(url, opts={}){ if(__simulateOffline) return new Promise((_r,rej)=>setTimeout(()=>rej(new Error('offline')),250)); return fetch(url,{...opts,cache:'no-store'}); }
+    function cleanHtml(h){return (h||'').replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();}
+    function summarize(t){t=cleanHtml(t||'');const cap=220;if(t.length<=cap)return t;const parts=t.split(/(?<=[.!?])\s+/).filter(Boolean);let out='';for(const s of parts){if((out+(out?' ':'')+s).length<=cap)out+=(out?' ':'')+s;else break;}return out||t.slice(0,cap);}
+    function timeAgo(s){const d=new Date(s);if(isNaN(d))return'';const sec=Math.floor((Date.now()-d)/1000);const p=[['yr',31536000],['mo',2592000],['d',86400],['h',3600],['m',60],['s',1]];for(const[n,v]of p){const k=Math.floor(sec/v);if(k>=1)return k+n;}return'now';}
+    function guessThumbFromDesc(d){const m=(d||'').match(/<img[^>]+src=["']([^"']+)["']/i);return m&&m[1]?m[1]:'';}
+    function favicon(link){try{const o=new URL(link).origin;return `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(o)}`}catch{return''}}
+    function dedupe(a){const s=new Set(),o=[];for(const it of a){const k=((it.title||'').trim().toLowerCase()+'|'+(it.link||''));if(!s.has(k)){s.add(k);o.push(it)}}return o;}
+    async function fetchText(url){const c=new AbortController();const id=setTimeout(()=>c.abort(),TIMEOUT);try{const r=await netFetch(url,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text();}finally{clearTimeout(id);}}
+    async function jget(url){const r=await netFetch(url);if(!r.ok)throw new Error(r.status);return r.json();}
+    function isNight(){const h=new Date().getHours();return(h<6||h>=20)}
+    function wClass(code){if([95,96,99].includes(code))return'bg-thunder';if([61,63,65,80,81,82].includes(code))return'bg-rain';if([71,73,75,85,86].includes(code))return'bg-snow';if([45,48].includes(code))return'bg-fog';if([0,1,2].includes(code))return(isNight()?'bg-night':'bg-clear');if([3].includes(code))return'bg-clouds';return'bg-clouds'}
+    function setWXBG(code){const cls=wClass(code);const b=document.body;b.className=b.className.split(' ').filter(c=>!/^(bg-(clear|clouds|rain|snow|fog|thunder|night))$/.test(c)).join(' ').trim();b.classList.add(cls)}
+    function fmtTime(i){if(!i)return'—';const d=new Date(i);return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}
     /* ------------------ STATE ------------------ */
-    let dataByCat = {};
-    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")||"[]");
-    let current = localStorage.getItem('currentCat') || ORDER[0];
-    let mode = localStorage.getItem('mode') || 'summaries';
-    let rendered = 0, filterQ = "";
-    const list = document.getElementById('list'), statusEl = document.getElementById('status'), chips = document.getElementById('chips'),
-          moreBtn = document.getElementById('moreBtn'), modeSel = document.getElementById('modeSel'), filterBox = document.getElementById('filterBox');
-
+    let dataByCat = {}; let bookmarks = JSON.parse(localStorage.getItem('bookmarks')||'[]');
+    let current = ORDER[0], rendered=0, filterQ='';
+    const list = document.getElementById('list'), statusEl=document.getElementById('status'), chips=document.getElementById('chips'), moreBtn=document.getElementById('moreBtn'), filterBox=document.getElementById('filterBox'), emptyState=document.getElementById('emptyState'), lastRefreshEl=document.getElementById('lastRefresh');
     /* ------------------ RENDER ------------------ */
-    function chipButton(cat){
-      const b=document.createElement('button');
-      b.className="px-3 py-1.5 rounded-full border text-xs "+(cat===current?"bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white":"bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700");
-      b.textContent=cat.replace(" News","");
-      b.addEventListener('click', ()=>{ current=cat; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-      return b;
-    }
-    function renderChips(){ chips.innerHTML=""; ORDER.forEach(cat => chips.appendChild(chipButton(cat))); modeSel.value = mode; }
-    function skeleRow(){
-      const li=document.createElement('li'); li.className="p-3";
-      li.innerHTML=`<div class="flex items-start gap-3">
-        <div class="thumb skeleton"></div>
-        <div class="min-w-0 w-full">
-          <div class="h-4 rounded skeleton w-3/4 mb-2"></div>
-          <div class="h-3 rounded skeleton w-1/2 mb-1"></div>
-          <div class="h-3 rounded skeleton w-full mb-1"></div>
-          <div class="h-3 rounded skeleton w-5/6"></div>
-        </div></div>`;
-      return li;
-    }
-    function rowView(it){
-      const li=document.createElement('li'); li.className="p-3";
-      const sum = summarizeAdaptive(it.desc);
-      const long = sum.length > 550 ? 'line-7' : sum.length > 380 ? 'line-5' : 'line-3';
-      const starred = bookmarks.some(b=>b.link===it.link);
-
-      if (mode === 'headlines') {
-        li.innerHTML = `<div class="flex items-start gap-3">
-          <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
-          <div class="min-w-0 w-full">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
-                <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
-              </div>
-              <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
-            </div>
-            <div class="mt-1 flex gap-3">
-              <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
-              <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
-            </div>
-          </div>
-        </div>`;
-      } else {
-        li.innerHTML=`<div class="flex items-start gap-3">
-          <img class="thumb ${!it.thumb?'hidden':''}" src="${it.thumb||''}" alt="" loading="lazy" onerror="this.style.display='none'">
-          <div class="min-w-0 w-full">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-[15px] font-semibold leading-tight">${it.title||''}</div>
-                <div class="text-[11px] text-slate-500 dark:text-slate-400">${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''}</div>
-              </div>
-              <button class="border px-2 py-1 rounded text-xs ${starred?'bg-yellow-200/40 dark:bg-yellow-600/20':''}" data-star="1">⭐︎</button>
-            </div>
-            <div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 ${long}">${sum}</div>
-            <div class="mt-1 flex gap-3">
-              <a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="${it.link}" target="_blank" rel="noopener">Open</a>
-              <button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button>
-            </div>
-          </div>
-        </div>`;
-      }
-      li.querySelector('[data-read]').addEventListener('click', ()=>openReader(it));
-      li.querySelector('[data-star]').addEventListener('click', ()=>toggleBookmark(it, li.querySelector('[data-star]')));
-      return li;
-    }
-    function getFiltered(cat){
-      let items = (cat==="Bookmarks") ? bookmarks : (dataByCat[cat] || []);
-      if(cat==="Top"){
-        const srcCats = ORDER.filter(c=>c!=="Top" && c!=="Bookmarks");
-        items = srcCats.flatMap(c => dataByCat[c] || []);
-        const now = Date.now();
-        items.forEach(it => {
-          const t = new Date(it.pubDate||0).getTime();
-          let score = isNaN(t) ? 0 : Math.max(0, 1_000_000_000 - (now - t));
-          try { const host=new URL(it.link).host.replace(/^www\./,''); score += (1000 / (1 + (host.length%7))); } catch {}
-          it.__score = score;
-        });
-        items = dedupe(items).sort((a,b)=> (b.__score||0) - (a.__score||0));
-      }
-      const q = (filterQ||"").toLowerCase();
-      if (q) items = items.filter(it => ((it.title||"") + " " + (it.source||"") + " " + cleanHtml(it.desc||"")).toLowerCase().includes(q));
-      return items.slice(0, MAX_PER_CAT);
-    }
-    function renderList(reset=false){
-      renderChips();
-      const items = getFiltered(current);
-      if (reset) list.innerHTML="";
-      const slice = items.slice(rendered, rendered + PAGE_SIZE);
-      if (reset && items.length===0){ for (let i=0;i<5;i++) list.appendChild(skeleRow()); }
-      else { slice.forEach(it => list.appendChild(rowView(it))); }
-      rendered += slice.length;
-      moreBtn.classList.toggle('hidden', rendered >= items.length);
-      statusEl.textContent = `${current} — ${items.length} items · Mode: ${mode}`;
-      if (mode==='reader' && reset && items[0]) openReader(items[0]);
-    }
-
+    function chipButton(cat){const b=document.createElement('button');b.className='px-3 py-1.5 rounded-full border text-xs '+(cat===current?'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 dark:border-white':'bg-white/70 dark:bg-slate-900/40 border-slate-300 dark:border-slate-700');b.textContent=cat.replace(' News','');b.addEventListener('click',()=>{current=cat;rendered=0;renderList(true);window.scrollTo({top:0,behavior:'smooth'})});return b;}
+    function renderChips(){chips.innerHTML='';ORDER.forEach(c=>chips.appendChild(chipButton(c)));}
+    function skeleRow(){const li=document.createElement('li');li.className='p-3';li.innerHTML='<div class="flex items-start gap-3"><div class="thumb skeleton" aria-hidden="true"></div><div class="min-w-0 w-full"><div class="h-4 rounded skeleton w-3/4 mb-2"></div><div class="h-3 rounded skeleton w-1/2 mb-1"></div><div class="h-3 rounded skeleton w-full mb-1"></div></div></div>';return li;}
+    async function tryOG(url,img){try{const h=await fetchText(viaJina(url));const m1=h.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);const m2=h.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);const s=(m1&&m1[1])||(m2&&m2[1]);if(s){img.src=s;img.style.display='';}}catch{}}
+    function rowView(it){const li=document.createElement('li');li.className='p-3';const sum=summarize(it.desc);const starred=bookmarks.some(b=>b.link===it.link);const t=(it.title||'').replace(/"/g,'&quot;');const imgSrc=it.thumb||favicon(it.link||'');li.innerHTML='<div class="flex items-start gap-3"><img class="thumb" src="'+(imgSrc||'')+'" alt="" loading="lazy" '+(imgSrc?'':'style="display:none"')+'><div class="min-w-0 w-full"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="text-[15px] font-semibold leading-tight truncate" title="'+t+'">'+(it.title||'')+'</div><div class="text-[11px] text-slate-500 dark:text-slate-400">'+(it.source||'')+(it.pubDate?(' · '+timeAgo(it.pubDate)):'')+'</div></div><button class="border px-2 py-1 rounded text-xs '+(starred?'bg-yellow-200/40 dark:bg-yellow-600/20':'')+'" data-star="1" title="Toggle bookmark">⭐︎</button></div><div class="text-[13px] text-slate-700 dark:text-slate-300 mt-1 line-2">'+sum+'</div><div class="mt-1 flex gap-3"><a class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" href="'+(it.link||'#')+'" target="_blank" rel="noopener">Open</a><button class="text-[12px] text-indigo-600 dark:text-indigo-400 underline" data-read="1">Read here</button></div></div></div>';const img=li.querySelector('img.thumb');if(!imgSrc&&it.link){tryOG(it.link,img)}li.querySelector('[data-read]').addEventListener('click',()=>openReader(it));li.querySelector('[data-star]').addEventListener('click',()=>toggleBookmark(it,li.querySelector('[data-star]')));return li;}
+    function getFiltered(cat){let items=dataByCat[cat]||[];if(cat==='Top'){const src=ORDER.filter(c=>c!=='Top');items=src.flatMap(c=>dataByCat[c]||[]);const now=Date.now();items.forEach(it=>{const t=new Date(it.pubDate||0).getTime();let score=isNaN(t)?0:Math.max(0,1_000_000_000-(now-t));try{const host=new URL(it.link).host.replace(/^www\./,'');score+=(1000/(1+(host.length%7)));}catch{}it.__score=score;});items=dedupe(items).sort((a,b)=>(b.__score||0)-(a.__score||0));}const q=(filterQ||'').toLowerCase();if(q)items=items.filter(it=>((it.title||'')+' '+(it.source||'')+' '+cleanHtml(it.desc||'')).toLowerCase().includes(q));return items.slice(0,MAX_PER_CAT);}
+    function renderList(reset=false){renderChips();const items=getFiltered(current);if(reset){list.innerHTML='';rendered=0;}if(items.length===0){emptyState.classList.remove('hidden');moreBtn.classList.add('hidden');}else{emptyState.classList.add('hidden');const slice=items.slice(rendered,rendered+PAGE_SIZE);slice.forEach(it=>list.appendChild(rowView(it)));rendered+=slice.length;moreBtn.classList.toggle('hidden',rendered>=items.length);}statusEl.textContent=current+' — '+items.length+' items';}
     /* ------------------ LOADERS ------------------ */
-    async function loadCategory(cat){
-      if (cat==="Top") return; // Bookmarks handled from localStorage
-      const feeds = FEEDS[cat] || [];
-      const results = await Promise.allSettled(feeds.map(loadFeed));
-      let merged=[]; for(const r of results) if(r.status==="fulfilled") merged=merged.concat(r.value);
-      dataByCat[cat] = dedupe(merged).sort((a,b)=> new Date(b.pubDate||0) - new Date(a.pubDate||0)).slice(0, MAX_PER_CAT);
-      if (cat===current) { rendered=0; renderList(true); }
-    }
-    async function loadAll(){
-      for (const cat of ORDER.filter(c=>c!=="Top" && c!=="Bookmarks")) await loadCategory(cat);
-      rendered=0; renderList(true);
-      updateNeedToKnow();
-    }
-
-    function updateNeedToKnow(){
-      const ul = document.getElementById('needToKnow'); if(!ul) return;
-      const cats = ORDER.filter(c => c!=="Top" && c!=="Bookmarks");
-      let items = []; for (const c of cats) items = items.concat(dataByCat[c] || []);
-      if (items.length === 0){ ul.innerHTML = '<li>Loading…</li>'; return; }
-      const now = Date.now();
-      items.forEach(it => {
-        const t = new Date(it.pubDate||0).getTime();
-        let score = isNaN(t) ? 0 : Math.max(0, 1_000_000_000 - (now - t));
-        try{ const host=(new URL(it.link)).host.replace(/^www\./,''); score += (1000 / (1 + (host.length%7))); }catch{}
-        it.__score = score;
-      });
-      items = dedupe(items).sort((a,b)=> (b.__score||0)-(a.__score||0)).slice(0,3);
-      ul.innerHTML = "";
-      items.forEach(it => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="font-semibold">${it.title}</span> <span class="text-[11px] text-slate-500 dark:text-slate-400">(${it.source||''}${it.pubDate?' · '+timeAgo(it.pubDate):''})</span>`;
-        ul.appendChild(li);
-      });
-    }
-
-    async function fetchMarkets(){
-      try{
-        const url = allorigins('https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC,%5EDJI,BTC-USD');
-        const r = await fetch(url);
-        if(!r.ok) throw new Error("Markets "+r.status);
-        const j = await r.json();
-        const res = j.quoteResponse?.result || [];
-        const by = Object.fromEntries(res.map(x => [x.symbol, x]));
-        const sp = by["^GSPC"], dji = by["^DJI"], btc = by["BTC-USD"];
-        const spEl = document.getElementById('mkSP'), djiEl = document.getElementById('mkDJI'), btcEl = document.getElementById('mkBTC');
-        if (sp && spEl){ const ch = (sp.regularMarketPrice - sp.regularMarketPreviousClose); spEl.textContent = `S&P 500: ${sp.regularMarketPrice.toFixed(2)} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((sp.regularMarketPrice - sp.regularMarketPreviousClose)/sp.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(spEl, ch); }
-        if (dji && djiEl){ const ch = (dji.regularMarketPrice - dji.regularMarketPreviousClose); djiEl.textContent = `Dow: ${Math.round(dji.regularMarketPrice).toLocaleString()} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((dji.regularMarketPrice - dji.regularMarketPreviousClose)/dji.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(djiEl, ch); }
-        if (btc && btcEl){ const ch = (btc.regularMarketPrice - btc.regularMarketPreviousClose); btcEl.textContent = `BTC: ${Math.round(btc.regularMarketPrice).toLocaleString()} (${ch>=0?'+':''}${ch.toFixed(2)}, ${((btc.regularMarketPrice - btc.regularMarketPreviousClose)/btc.regularMarketPreviousClose*100).toFixed(2)}%)`; colorize(btcEl, ch); }
-      }catch(e){
-        const spEl = document.getElementById('mkSP'); if(spEl) spEl.textContent = "S&P 500: unavailable";
-      }
-    }
-
+    async function loadFeedXML(url){const tries=[viaJina(url),allorigins(url),corsgit(url)];for(const u of tries){try{const txt=await fetchText(u);const doc=new DOMParser().parseFromString(txt,'application/xml');if(doc.querySelector('parsererror'))throw new Error('XML parse error');const nodes=Array.from(doc.querySelectorAll('item,entry'));const ch=doc.querySelector('channel>title')?.textContent;const out=nodes.map(n=>{const g=s=>n.querySelector(s)?.textContent||'';let link=g('link');const cands=n.querySelectorAll('link[rel="alternate"], link[href]');for(const ln of cands){const href=ln.getAttribute('href');if(href&&/^https?:/i.test(href)){link=href;break;}}let thumb='';thumb=thumb||n.querySelector('enclosure')?.getAttribute('url')||'';thumb=thumb||n.querySelector('media\\:content')?.getAttribute('url')||'';thumb=thumb||n.querySelector('media\\:thumbnail')?.getAttribute('url')||'';const desc=g('description')||g('content')||g('summary')||g('content\\:encoded')||'';thumb=thumb||guessThumbFromDesc(desc);if(!thumb)thumb=favicon(link);const pub=g('pubDate')||g('updated')||g('published')||'';const source=ch||(new URL(url)).hostname;return {title:g('title'),link,desc,pubDate:pub,source,thumb};});return out;}catch(e){}}return[];}
+    async function loadFeed(url){try{return await loadFeedXML(url);}catch{return[];}}
+    async function loadCategory(cat){if(cat==='Top')return;const feeds=FEEDS[cat]||[];const results=await Promise.allSettled(feeds.map(loadFeed));let merged=[];for(const r of results)if(r.status==='fulfilled')merged=merged.concat(r.value);dataByCat[cat]=dedupe(merged).sort((a,b)=>new Date(b.pubDate||0)-new Date(a.pubDate||0)).slice(0,MAX_PER_CAT);if(cat===current)renderList(true);}
+    async function loadAll(){statusEl.textContent='Loading feeds…';await Promise.all(ORDER.filter(c=>c!=='Top').map(loadCategory));renderList(true);statusEl.textContent='Loaded';lastRefreshEl.textContent='Refreshed '+new Date().toLocaleTimeString();}
     /* ------------------ READER & BOOKMARKS ------------------ */
-    const reader = document.getElementById('reader'), readerBackdrop = document.getElementById('readerBackdrop'),
-          readerTitle = document.getElementById('readerTitle'), readerMeta = document.getElementById('readerMeta'),
-          readerImg = document.getElementById('readerImg'), readerBody = document.getElementById('readerBody'),
-          readerOpen = document.getElementById('readerOpen'), readerClose = document.getElementById('readerClose'),
-          readerStar = document.getElementById('readerStar'), readerShare = document.getElementById('readerShare');
-    let readerItem = null;
-    function toggleBookmark(it, btn=null){
-      const idx = bookmarks.findIndex(b=>b.link===it.link);
-      if (idx>=0) bookmarks.splice(idx,1);
-      else bookmarks.unshift({title:it.title, link:it.link, desc:it.desc, pubDate:it.pubDate, source:it.source, thumb:it.thumb});
-      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-      if(btn){ if(idx>=0){ btn.classList.remove('bg-yellow-200/40','dark:bg-yellow-600/20'); } else { btn.classList.add('bg-yellow-200/40','dark:bg-yellow-600/20'); } }
-    }
-    function openReader(it){
-      readerItem = it;
-      modeSel.value='reader'; mode='reader'; localStorage.setItem('mode', mode);
-      readerTitle.textContent = it.title || "";
-      readerMeta.textContent = `${it.source || ""}${it.pubDate ? " · " + timeAgo(it.pubDate) : ""}`;
-      if (it.thumb) { readerImg.src=it.thumb; readerImg.classList.remove('hidden'); } else readerImg.classList.add('hidden');
-      readerBody.textContent = cleanHtml(it.desc || "") || "This source doesn't include full text in RSS. Tap Open to read more.";
-      readerOpen.href = it.link || "#";
-      const starred = bookmarks.some(b=>b.link===it.link);
-      readerStar.classList.toggle('bg-yellow-200/40', starred); readerStar.classList.toggle('dark:bg-yellow-600/20', starred);
-      reader.classList.remove('hidden');
-    }
-    readerBackdrop.addEventListener('click', ()=>reader.classList.add('hidden'));
-    readerClose.addEventListener('click', ()=>reader.classList.add('hidden'));
-    readerStar.addEventListener('click', ()=>{ if(readerItem) toggleBookmark(readerItem, readerStar); });
-    readerShare.addEventListener('click', async ()=>{
-      try{
-        if (navigator.share && readerItem) await navigator.share({title: readerItem.title, text: readerItem.source, url: readerItem.link});
-        else if (readerItem) { await navigator.clipboard.writeText(readerItem.link); alert('Link copied to clipboard'); }
-      } catch {}
-    });
-
-    /* ------------------ WEATHER (GPS + manual + background) ------------------ */
-    const wxCard = document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'),
-          wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
-    const locBtn = document.getElementById('locBtn'), locDialog = document.getElementById('locDialog'),
-          locInput = document.getElementById('locInput'), locResults = document.getElementById('locResults');
-
-    function wtext(code){ if(code===0) return "Clear sky"; if(code===1) return "Mainly clear"; if(code===2) return "Partly cloudy"; if(code===3) return "Overcast"; if([45,48].includes(code)) return "Fog"; if([51,53,55].includes(code)) return "Drizzle"; if([61,63,65,80,81,82].includes(code)) return "Rain"; if([71,73,75,85,86].includes(code)) return "Snow"; if([95,96,99].includes(code)) return "Thunderstorm"; return "Weather"; }
-    async function jget(url){ const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json(); }
-
-    async function reverse(lat,lon){
-      try{
-        const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);
-        const p=j?.results?.[0];
-        if(!p) return null;
-        return [p.name,p.admin1,p.country].filter(Boolean).join(", ");
-      } catch { return null; }
-    }
-
-    async function loadWeather(lat,lon){
-      try{
-        const j=await jget(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto`);
-        const cur=j.current_weather;
-        let place = await reverse(lat,lon);
-        if(!place) place = "Your location";
-
-        wxPlace.textContent=place;
-        wxDesc.textContent=`${wtext(cur.weathercode)} · Wind ${Math.round(cur.windspeed)} mph`;
-        wxTemp.textContent=`${Math.round(cur.temperature)}°F`;
-        wxMeta.textContent=`As of ${new Date().toLocaleTimeString()}`;
-        wxCard.classList.remove("hidden");
-        wxHint.classList.add("hidden");
-
-        localStorage.setItem("wx", JSON.stringify({lat,lon,cur,place,t:Date.now()}));
-        setWeatherBackground(cur.weathercode);
-        fetchSunTimes(lat, lon);
-      } catch(e){
-        wxDesc.textContent="Weather unavailable. Tap 📍 or set city/ZIP.";
-        wxCard.classList.remove("hidden");
-      }
-    }
-
-    function askGeo(){
-      if(!navigator.geolocation){ locDialog.showModal(); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos=>{ const {latitude:lat,longitude:lon}=pos.coords||{}; if(typeof lat==="number"&&typeof lon==="number") loadWeather(lat,lon); },
-        err=>{ locDialog.showModal(); },
-        { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
-      );
-    }
-    locBtn.addEventListener('click', askGeo);
-
-    async function geocode(query){
-      try{
-        const j=await jget(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`);
-        const arr=j?.results||[];
-        if(arr.length===0){ locResults.textContent="No matches."; return; }
-        locResults.innerHTML="";
-        arr.forEach(p=>{
-          const btn=document.createElement('button');
-          btn.className="block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800";
-          btn.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(", ");
-          btn.addEventListener('click', ()=>{
-            locDialog.close();
-            loadWeather(p.latitude, p.longitude);
-            localStorage.setItem("wxManual", JSON.stringify({
-              lat:p.latitude, lon:p.longitude,
-              place:[p.name,p.admin1,p.country].filter(Boolean).join(", ")
-            }));
-          });
-          locResults.appendChild(btn);
-        });
-      } catch { locResults.textContent="Search failed. Try again."; }
-    }
-    let locTimer; locInput?.addEventListener('input', ()=>{ clearTimeout(locTimer); const v=locInput.value.trim(); if(v.length<2){ locResults.textContent=""; return; } locTimer=setTimeout(()=>geocode(v), 250); });
-
-    async function fetchSunTimes(lat, lon){
-      try{
-        const r = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`);
-        if(!r.ok) throw new Error("sun "+r.status);
-        const j = await r.json();
-        const data = j.status==="OK" ? j.results : null;
-        const el = document.getElementById('sunTimes');
-        if(!el) return;
-        if(!data){ el.textContent = "—"; return; }
-        const sr = new Date(data.sunrise), ss = new Date(data.sunset);
-        const fmt = { hour:'numeric', minute:'2-digit' };
-        el.textContent = `Sunrise ${sr.toLocaleTimeString([],fmt)} · Sunset ${ss.toLocaleTimeString([],fmt)} · Daylight ${data.day_length}`;
-      }catch{
-        const el = document.getElementById('sunTimes'); if(el) el.textContent = "—";
-      }
-    }
-
+    const reader=document.getElementById('reader'), readerBackdrop=document.getElementById('readerBackdrop'), readerTitle=document.getElementById('readerTitle'), readerMeta=document.getElementById('readerMeta'), readerImg=document.getElementById('readerImg'), readerBody=document.getElementById('readerBody'), readerOpen=document.getElementById('readerOpen'), readerClose=document.getElementById('readerClose');
+    function toggleBookmark(it,btn=null){const i=bookmarks.findIndex(b=>b.link===it.link);if(i>=0)bookmarks.splice(i,1);else bookmarks.unshift({title:it.title,link:it.link,desc:it.desc,pubDate:it.pubDate,source:it.source,thumb:it.thumb});localStorage.setItem('bookmarks',JSON.stringify(bookmarks));if(btn){if(i>=0)btn.classList.remove('bg-yellow-200/40','dark:bg-yellow-600/20');else btn.classList.add('bg-yellow-200/40','dark:bg-yellow-600/20');}}
+    function openReader(it){readerTitle.textContent=it.title||'';readerMeta.textContent=(it.source||'')+(it.pubDate?(' · '+timeAgo(it.pubDate)):'');if(it.thumb){readerImg.src=it.thumb;readerImg.classList.remove('hidden');}else readerImg.classList.add('hidden');readerBody.textContent=cleanHtml(it.desc||'')||"This source doesn't include full text in RSS. Tap Open to read more.";readerOpen.href=it.link||'#';reader.classList.remove('hidden');}
+    readerBackdrop.addEventListener('click',()=>reader.classList.add('hidden'));readerClose.addEventListener('click',()=>reader.classList.add('hidden'));
+    /* ------------------ WEATHER ------------------ */
+    const wxCard=document.getElementById('wxCard'), wxPlace=document.getElementById('wxPlace'), wxDesc=document.getElementById('wxDesc'), wxTemp=document.getElementById('wxTemp'), wxMeta=document.getElementById('wxMeta'), wxHint=document.getElementById('wxHint');
+    const locBtn=document.getElementById('locBtn'), locDialog=document.getElementById('locDialog'), locInput=document.getElementById('locInput'), locResults=document.getElementById('locResults');
+    function wtext(c){if(c===0)return'Clear sky';if(c===1)return'Mainly clear';if(c===2)return'Partly cloudy';if(c===3)return'Overcast';if([45,48].includes(c))return'Fog';if([51,53,55].includes(c))return'Drizzle';if([61,63,65,80,81,82].includes(c))return'Rain';if([71,73,75,85,86].includes(c))return'Snow';if([95,96,99].includes(c))return'Thunderstorm';return'Weather'}
+    async function reverse(lat,lon){try{const j=await jget(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en`);const p=j?.results?.[0];if(!p)return null;return [p.name,p.admin1,p.country].filter(Boolean).join(', ');}catch{return null}}
+    async function ipCity(){try{const j=await jget('https://ipapi.co/json/');const name=[j.city,j.region,j.country_name].filter(Boolean).join(', ');return {name,lat:j.latitude,lon:j.longitude};}catch{return null}}
+    async function loadWeather(lat,lon){try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`;const j=await jget(url);const cur=j.current_weather;const d=j.daily||{};let place=await reverse(lat,lon);if(!place){const ip=await ipCity();if(ip&&ip.name)place=ip.name;}if(!place)place='Your city';const tmax=Array.isArray(d.temperature_2m_max)?d.temperature_2m_max[0]:null;const tmin=Array.isArray(d.temperature_2m_min)?d.temperature_2m_min[0]:null;const sunrise=Array.isArray(d.sunrise)?d.sunrise[0]:null;const sunset=Array.isArray(d.sunset)?d.sunset[0]:null;wxPlace.textContent=place;wxDesc.textContent=wtext(cur.weathercode)+' · Wind '+Math.round(cur.windspeed)+' mph';wxTemp.textContent=Math.round(cur.temperature)+'°F';const parts=[];if(tmax!=null&&tmin!=null)parts.push(`H/L ${Math.round(tmax)}/${Math.round(tmin)}°F`);if(sunrise)parts.push('Sunrise '+fmtTime(sunrise));if(sunset)parts.push('Sunset '+fmtTime(sunset));parts.push('As of '+new Date().toLocaleTimeString());wxMeta.textContent=parts.join(' · ');wxCard.classList.remove('hidden');wxHint.classList.add('hidden');localStorage.setItem('wx',JSON.stringify({lat,lon,cur,place,t:Date.now(),tmax,tmin,sunrise,sunset}));setWXBG(cur.weathercode);}catch(e){wxDesc.textContent='Weather unavailable. Tap 📍 or set city/ZIP.';wxCard.classList.remove('hidden');}}
+    async function loadByIP(){const ip=await ipCity();if(ip&&typeof ip.lat==='number'&&typeof ip.lon==='number'){await loadWeather(ip.lat,ip.lon);}else{locDialog.showModal();}}
+    function askGeo(){if(!navigator.geolocation){loadByIP();return;}navigator.geolocation.getCurrentPosition(p=>{const {latitude:lat,longitude:lon}=p.coords||{};if(typeof lat==='number'&&typeof lon==='number')loadWeather(lat,lon);else loadByIP();},_e=>{loadByIP();},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});}
+    locBtn.addEventListener('click',askGeo);
+    async function geocode(q){try{const j=await jget('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=en&format=json');const arr=j?.results||[];if(arr.length===0){locResults.textContent='No matches.';return;}locResults.innerHTML='';arr.forEach(p=>{const b=document.createElement('button');b.className='block w-full text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800';b.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(', ');b.addEventListener('click',()=>{locDialog.close();loadWeather(p.latitude,p.longitude);});locResults.appendChild(b);});}catch{locResults.textContent='Search failed. Try again.'}}
+    let locTimer;locInput?.addEventListener('input',()=>{clearTimeout(locTimer);const v=locInput.value.trim();if(v.length<2){locResults.textContent='';return;}locTimer=setTimeout(()=>geocode(v),250);});
     /* ------------------ CONTROLS ------------------ */
-    document.getElementById('refreshBtn').addEventListener('click', ()=>{ try { loadAll(); } catch(e){} try { fetchMarkets(); } catch(e){} });
-    document.getElementById('dockHome').addEventListener('click', ()=>{ current="Top"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockNat').addEventListener('click', ()=>{ current="National News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockOhio').addEventListener('click', ()=>{ current="Ohio News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockLocal').addEventListener('click', ()=>{ current="Columbus News"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockHL').addEventListener('click', ()=>{ current="Home Lending"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('dockAI').addEventListener('click', ()=>{ current="AI"; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('bmBtn').addEventListener('click', ()=>{ current='Bookmarks'; rendered=0; localStorage.setItem('currentCat', current); renderList(true); window.scrollTo({top:0,behavior:'smooth'}); });
-
-    const themeMeta = document.querySelector('meta[name="theme-color"]');
-    function updateThemeColor(){ const dark = document.documentElement.classList.contains('dark'); if(themeMeta) themeMeta.setAttribute('content', dark ? '#0b1220' : '#ffffff'); }
-
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const storedTheme = localStorage.getItem('theme');
-    if ((storedTheme==='dark') || (!storedTheme && prefersDark)) document.documentElement.classList.add('dark');
-    updateThemeColor();
-    document.getElementById('themeBtn').addEventListener('click', ()=>{
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light');
-      updateThemeColor();
-    });
-
-    modeSel.addEventListener('change', ()=>{ mode=modeSel.value; localStorage.setItem('mode', mode); if(mode!=='reader') reader.classList.add('hidden'); rendered=0; renderList(true); });
-    let t; filterBox.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ filterQ=filterBox.value||""; rendered=0; renderList(true); }, 180); });
-
-    // Pull-to-refresh
-    let y0=null; window.addEventListener('touchstart', e=>{ if(document.scrollingElement.scrollTop===0) y0=e.touches[0].clientY; }, {passive:true});
-    window.addEventListener('touchmove', e=>{ if(y0!==null && e.touches[0].clientY - y0 > 90){ y0=null; try{ loadAll(); }catch(e){} try{ fetchMarkets(); }catch(e){} } }, {passive:true});
-    window.addEventListener('touchend', ()=>{ y0=null; }, {passive:true});
-
-    // Swipe left/right for categories
-    (function enableSwipeNav(){
-      let sx=null, sy=null, handled=false;
-      const THRESH_X=60, RATIO=1.8;
-      function switchBy(offset){
-        const cats = ORDER; // include Bookmarks in swipe order now
-        const idx = cats.indexOf(current); if(idx<0) return;
-        current = cats[(idx+offset+cats.length)%cats.length]; rendered=0; localStorage.setItem('currentCat', current); renderList(true);
-      }
-      window.addEventListener('touchstart', e=>{ if(e.touches.length!==1) return; handled=false; sx=e.touches[0].clientX; sy=e.touches[0].clientY; }, {passive:true});
-      window.addEventListener('touchmove', e=>{ if(sx===null||sy===null||handled) return; const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy; if(Math.abs(dx)>THRESH_X && Math.abs(dx)>Math.abs(dy)*RATIO){ handled=true; if(dx<0) switchBy(+1); else switchBy(-1); } }, {passive:true});
-      window.addEventListener('touchend', ()=>{ sx=sy=null; handled=false; }, {passive:true});
-    })();
-
+    document.getElementById('refreshBtn').addEventListener('click',()=>{try{loadAll();}catch(e){}});
+    document.getElementById('dockHome').addEventListener('click',()=>{current='Top';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    document.getElementById('dockNat').addEventListener('click',()=>{current='National News';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    document.getElementById('dockOhio').addEventListener('click',()=>{current='Ohio News';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    document.getElementById('dockLocal').addEventListener('click',()=>{current='Columbus News';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    document.getElementById('dockHL').addEventListener('click',()=>{current='Home Lending';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    document.getElementById('dockAI').addEventListener('click',()=>{current='AI';renderList(true);window.scrollTo({top:0,behavior:'smooth'})});
+    let t;filterBox.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{filterQ=filterBox.value||'';renderList(true);},180)});
+    const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;const storedTheme=localStorage.getItem('theme');if((storedTheme==='dark')||(!storedTheme&&prefersDark))document.documentElement.classList.add('dark');document.getElementById('themeBtn').addEventListener('click',()=>{document.documentElement.classList.toggle('dark');localStorage.setItem('theme',document.documentElement.classList.contains('dark')?'dark':'light')});
     /* ------------------ BOOT ------------------ */
+    window.addEventListener('error',(e)=>{const box=document.getElementById('status');if(box){box.textContent='Error: '+(e.message||'Script error');}console.error('Runtime error:',e);});
     (function init(){
+      for(let i=0;i<7;i++)list.appendChild(skeleRow());
       renderChips();
-      quoteOfDay();
+      (function quote(){const q=[['Make each day your masterpiece.','John Wooden'],['The secret of getting ahead is getting started.','Mark Twain'],['What you do every day matters more than what you do once in a while.','Gretchen Rubin'],['The future depends on what you do today.','Mahatma Gandhi'],['Well done is better than well said.','Benjamin Franklin'],['It always seems impossible until it’s done.','Nelson Mandela'],['Do the hard things first.','Brian Tracy'],['The best way out is always through.','Robert Frost']];const i=Math.floor(Date.now()/86400000)%q.length;document.getElementById('qod').textContent='“'+q[i][0]+'” — '+q[i][1];})();
+      try{ loadAll(); }catch(e){}
+      lastRefreshEl.textContent='Refreshed '+new Date().toLocaleTimeString();
+      // cached markets fallback
       try{
-        const m=JSON.parse(localStorage.getItem("wxManual")||"null"); if(m) loadWeather(m.lat,m.lon);
-        const c=JSON.parse(localStorage.getItem("wx")||"null");
-        if(c && Date.now()-c.t<30*60*1000){
-          if(!c.place){
-            reverse(c.lat,c.lon).then(p=>{ if(p){ c.place=p; localStorage.setItem("wx", JSON.stringify(c)); wxPlace.textContent=p; }});
-          }
-          wxPlace.textContent=c.place||"Your location";
-          wxDesc.textContent=`${wtext(c.cur.weathercode)} · Wind ${Math.round(c.cur.windspeed)} mph`;
-          wxTemp.textContent=`${Math.round(c.cur.temperature)}°F`;
-          wxMeta.textContent=`Cached · ${new Date(c.t).toLocaleTimeString()}`;
-          wxCard.classList.remove("hidden");
-          setWeatherBackground(c.cur.weathercode);
-          fetchSunTimes(c.lat, c.lon);
+        const c=JSON.parse(localStorage.getItem('mk')||'null');
+        if(c){
+          renderIdx('mkSP','S&P',c.spy);
+          renderIdx('mkDJI','Dow', c.dia);
+          renderIdx('mkIXIC','Nasdaq', c.qqq);
+          const ti=document.getElementById('tickerInner');
+          if(ti && (/Loading/.test(ti.textContent))) ti.textContent='S&P • Dow • Nasdaq';
         }
       }catch{}
-      // Ask for location on first run
-      if(!localStorage.getItem('askedGeoOnce')){ localStorage.setItem('askedGeoOnce','1'); askGeo(); }
-
-      for(let i=0;i<5;i++) list.appendChild(skeleRow());
-      try { loadAll(); } catch(e){}
-      try { fetchMarkets(); } catch(e){}
+      // Weather
+      try{
+        const c=JSON.parse(localStorage.getItem('wx')||'null');
+        if(c){
+          wxPlace.textContent=c.place||'Your city';
+          wxDesc.textContent=wtext(c.cur.weathercode)+' · Wind '+Math.round(c.cur.windspeed)+' mph';
+          wxTemp.textContent=Math.round(c.cur.temperature)+'°F';
+          const parts=[];
+          if (c.tmax!=null && c.tmin!=null) parts.push(`H/L ${Math.round(c.tmax)}/${Math.round(c.tmin)}°F`);
+          if (c.sunrise) parts.push('Sunrise '+fmtTime(c.sunrise));
+          if (c.sunset)  parts.push('Sunset '+fmtTime(c.sunset));
+          parts.push('Cached · '+new Date(c.t||Date.now()).toLocaleTimeString());
+          wxMeta.textContent=parts.join(' · ');
+          wxCard.classList.remove('hidden');
+          setWXBG(c.cur.weathercode);
+        } else {
+          askGeo();
+        }
+      }catch{ askGeo(); }
     })();
-
-    // Minimal PWA service worker (inline via Blob so you don't need a separate file)
-    if ('serviceWorker' in navigator) {
-      const swCode = `const CACHE='mn-v1';const CORE=[self.location.href];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin===location.origin){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return resp;})).catch(()=>caches.match('/')));} });`;
-      const blob = new Blob([swCode], {type: 'text/javascript'});
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
-    }
   </script>
 </body>
 </html>
