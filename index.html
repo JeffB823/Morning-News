@@ -214,13 +214,45 @@
   if (STATE.prefersReducedMotion) document.documentElement.classList.add('no-motion');
 
   const FEEDS = {
-    "Top": ["https://feeds.reuters.com/reuters/topNews","https://feeds.npr.org/1001/rss.xml"],
-    "National": ["https://feeds.npr.org/1003/rss.xml","https://rss.nytimes.com/services/xml/rss/nyt/US.xml"],
-    "Ohio": ["https://www.cleveland.com/arc/outboundfeeds/rss/?outputType=xml","https://www.dispatch.com/feeds/news?x=1"],
-    "Columbus": ["https://www.columbusunderground.com/rss/","https://radio.wosu.org/rss.xml"],
-    "Home Lending": ["https://www.mortgagenewsdaily.com/rss","https://newslink.mba.org/feed/","https://www.housingwire.com/rss"],
-    "AI": ["https://openai.com/blog/rss","https://venturebeat.com/category/ai/feed/","https://www.theverge.com/artificial-intelligence/rss/index.xml"]
-  };
+  "Top": [
+    "https://feeds.reuters.com/reuters/topNews",
+    "https://feeds.npr.org/1001/rss.xml",
+    "http://feeds.bbci.co.uk/news/rss.xml",
+    "https://www.pbs.org/newshour/feeds/rss"
+  ],
+  "National": [
+    "https://feeds.npr.org/1003/rss.xml",
+    "https://rss.nytimes.com/services/xml/rss/nyt/US.xml",
+    "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "https://www.pbs.org/newshour/feeds/rss"
+  ],
+  "Ohio": [
+    "https://www.cleveland.com/arc/outboundfeeds/rss/?outputType=xml",
+    "https://www.dispatch.com/feeds/news?x=1",
+    "https://ohiocapitaljournal.com/feed/"
+  ],
+  "Columbus": [
+    "https://www.columbusunderground.com/rss/",
+    "https://radio.wosu.org/rss.xml",
+    "https://www.nbc4i.com/feed/"
+  ],
+  "Home Lending": [
+    "https://www.mortgagenewsdaily.com/rss",
+    "https://newslink.mba.org/feed/",
+    "https://www.housingwire.com/rss",
+    "https://www.nationalmortgagenews.com/feed",
+    "https://www.consumerfinance.gov/about-us/newsroom/feed/",
+    "https://www.fanniemae.com/rss/rss.xml"
+  ],
+  "AI": [
+    "https://openai.com/blog/rss",
+    "https://ai.googleblog.com/feeds/posts/default",
+    "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
+    "https://news.mit.edu/rss/topic/artificial-intelligence",
+    "https://venturebeat.com/category/ai/feed/",
+    "https://www.theverge.com/artificial-intelligence/rss/index.xml"
+  ]
+};
   const TTL_MIN = 12, FEED_TIMEOUT = 12000;
 
   const QUOTES = [
