@@ -1,112 +1,184 @@
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Morning News — Neo (Fahrenheit)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Morning News – Executive Dashboard</title>
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#0b1220">
-  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
-  <link rel="preconnect" href="https://s3.tradingview.com" crossorigin>
-  <link rel="preconnect" href="https://api.allorigins.win" crossorigin>
-  <link rel="preconnect" href="https://geocoding-api.open-meteo.com" crossorigin>
-  <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
-  <link rel="preconnect" href="https://ip-api.open-meteo.com" crossorigin>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* (Same Neo design system styles as previous version) */
-    :root {
-      --bg: #0a0f1e; --bg-grid: rgba(255,255,255,0.04);
-      --surface: rgba(255,255,255,0.06); --surface-2: rgba(255,255,255,0.04);
-      --text: #e6e9ef; --muted: #9aa4b2; --accent: #7dd3fc; --accent-2: #a78bfa;
-      --accent-soft: rgba(167,139,250,.25); --ring: rgba(125,211,252,.45);
-      --divider: rgba(255,255,255,.08); --shadow: 0 10px 30px rgba(2,6,23,.35);
-      --radius: 18px; --row-min-height: 90px;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    :root { 
+      --bg: #0c0c0f; --surface: rgba(255,255,255,0.03); --surface-hover: rgba(255,255,255,0.08); --text: #f8fafc; --muted: #94a3b8; 
+      --accent: #00d4ff; --accent-glow: #00d4ff33; --purple: #8b5cf6; --gold: #fbbf24; --emerald: #10b981; 
+      --border: rgba(255,255,255,0.06); --shadow: 0 20px 40px rgba(0,0,0,0.4); --glow: 0 0 30px var(--accent-glow);
     }
-    :root:not(.dark) {
-      --bg: #f6f7fb; --bg-grid: rgba(3,7,18,0.05);
-      --surface: rgba(255,255,255,0.85); --surface-2: rgba(255,255,255,0.70);
-      --text: #0b1020; --muted: #5b6575; --accent: #2563eb; --accent-2: #06b6d4;
-      --accent-soft: rgba(2,132,199,.18); --ring: rgba(37,99,235,.35);
-      --divider: rgba(3,7,18,.08); --shadow: 0 10px 28px rgba(2,6,23,.12);
+    :root:not(.dark) { 
+      --bg: #fafbfc; --surface: rgba(255,255,255,0.95); --surface-hover: rgba(255,255,255,1); --text: #0f172a; --muted: #64748b; 
+      --border: rgba(15,23,42,0.08); --shadow: 0 20px 40px rgba(15,23,42,0.15); --glow: 0 0 30px rgba(0,212,255,0.2);
     }
-    body {
-      color: var(--text);
-      background:
-        radial-gradient(1200px 600px at 100% -10%, rgba(167,139,250,.08), transparent 60%),
-        radial-gradient(900px 500px at -10% 110%, rgba(125,211,252,.08), transparent 55%),
+    
+    * { font-family: 'Inter', sans-serif; }
+    body { 
+      color: var(--text); 
+      background: 
+        radial-gradient(circle at 20% 20%, var(--accent-glow) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, #8b5cf633 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, #fbbf2433 0%, transparent 50%),
         var(--bg);
-      position: relative; min-height: 100vh;
+      min-height: 100vh; position: relative;
     }
     body::before {
-      content: ""; position: fixed; inset: 0; pointer-events: none;
-      background-image:
-        linear-gradient(var(--bg-grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
-      background-size: 24px 24px;
-      mask-image: radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.9), rgba(0,0,0,.2) 60%, transparent 70%);
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      background: 
+        linear-gradient(135deg, transparent 25%, rgba(0,212,255,0.02) 25%, rgba(0,212,255,0.02) 50%, transparent 50%, transparent 75%, rgba(139,92,246,0.02) 75%),
+        linear-gradient(45deg, transparent 25%, rgba(251,191,36,0.02) 25%, rgba(251,191,36,0.02) 50%, transparent 50%);
+      background-size: 60px 60px, 40px 40px;
+      animation: float 20s ease-in-out infinite;
     }
-    .glass { background: var(--surface); backdrop-filter: blur(12px); border: 1px solid var(--divider); box-shadow: var(--shadow); }
-    .card { background: var(--surface); border: 1px solid var(--divider); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .card-2 { background: var(--surface-2); border: 1px solid var(--divider); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .btn-ghost { border: 1px solid var(--divider); background: transparent; border-radius: 12px; padding: 6px 10px; }
-    .btn-ghost:hover { background: rgba(255,255,255,.06); }
-    .chip {
-      position: relative; border-radius: 9999px; padding: 8px 14px; border: 1px solid transparent;
-      background: linear-gradient(var(--surface), var(--surface)) padding-box,
-                  linear-gradient(135deg, var(--accent), var(--accent-2)) border-box; color: var(--text);
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    @keyframes glow { 0%, 100% { box-shadow: var(--shadow), var(--glow); } 50% { box-shadow: var(--shadow), 0 0 40px var(--accent-glow); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    .glass { 
+      background: var(--surface); backdrop-filter: blur(20px) saturate(180%); 
+      border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .chip.active {
-      background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(167,139,250,.18)) padding-box,
-                  linear-gradient(135deg, var(--accent), var(--accent-2)) border-box;
-      box-shadow: 0 0 0 1px var(--accent-soft) inset, 0 0 24px var(--accent-soft);
+    .glass:hover { background: var(--surface-hover); transform: translateY(-2px); animation: glow 2s ease-in-out infinite; }
+    .glass-lg { border-radius: 32px; }
+    
+    .chip { 
+      position: relative; border-radius: 20px; padding: 12px 24px; border: 1px solid var(--border);
+      background: var(--surface); backdrop-filter: blur(12px); transition: all 0.3s ease;
+      font-weight: 500; cursor: pointer; overflow: hidden;
     }
-    .brand { background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .kbd { padding: 2px 6px; border-radius: 6px; border: 1px solid var(--divider); font-size: 12px; color: var(--muted); }
-    .divider { border-color: var(--divider) !important; }
-    .news-row { content-visibility: auto; contain-intrinsic-size: var(--row-min-height) 1000px; }
-    .blur-up { filter: blur(10px); transition: filter .4s ease; } .blur-up.loaded { filter: blur(0); }
-    .ticker-fallback { white-space: nowrap; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
-    .ticker-fallback-inner { display: inline-block; padding-left: 100%; animation: ticker 22s linear infinite; opacity: .9; }
-    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-    .no-motion * { animation: none !important; transition: none !important; }
-    .skeleton { position: relative; overflow: hidden; }
-    .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(125,211,252,.18), transparent); transform: translateX(-100%); animation: shimmer 1.15s infinite; }
-    @keyframes shimmer { 100% { transform: translateX(100%); } }
-    dialog { background: var(--surface); border: 1px solid var(--divider); color: var(--text); border-radius: var(--radius); }
-    .muted { color: var(--muted); }
-    .input { background: var(--surface-2); border: 1px solid var(--divider); color: var(--text); border-radius: 12px; padding: 10px 12px; outline: none; }
-    .input:focus { box-shadow: 0 0 0 3px var(--ring); border-color: transparent; }
+    .chip::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, var(--accent), var(--purple)); opacity: 0; transition: opacity 0.3s; border-radius: inherit; }
+    .chip:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+    .chip:hover::before { opacity: 0.1; }
+    .chip.active { 
+      background: linear-gradient(135deg, var(--accent), var(--purple)); color: #000; font-weight: 600;
+      box-shadow: var(--glow); animation: glow 3s ease-in-out infinite;
+    }
+    
+    .brand { 
+      background: linear-gradient(135deg, var(--accent), var(--purple), var(--gold)); 
+      -webkit-background-clip: text; background-clip: text; color: transparent; 
+      font-weight: 700; letter-spacing: -0.02em;
+    }
+    
+    .btn { 
+      padding: 12px 16px; border: 1px solid var(--border); border-radius: 16px; 
+      background: var(--surface); color: var(--text); cursor: pointer; font-weight: 500;
+      backdrop-filter: blur(12px); transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, var(--accent)22, var(--purple)22); opacity: 0; transition: opacity 0.3s; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--glow); }
+    .btn:hover::before { opacity: 1; }
+    .btn:active { transform: translateY(0); }
+    
+    .input { 
+      background: var(--surface); border: 1px solid var(--border); color: var(--text); 
+      border-radius: 16px; padding: 16px 20px; outline: none; backdrop-filter: blur(12px);
+      transition: all 0.3s ease; font-weight: 400;
+    }
+    .input:focus { 
+      border-color: var(--accent); box-shadow: var(--glow); 
+      background: var(--surface-hover); transform: translateY(-1px);
+    }
+    .input::placeholder { color: var(--muted); }
+    
+    .card { 
+      background: var(--surface); border: 1px solid var(--border); border-radius: 24px; 
+      backdrop-filter: blur(20px) saturate(180%); box-shadow: var(--shadow); 
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); animation: slideIn 0.6s ease;
+      position: relative; overflow: hidden;
+    }
+    .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow), var(--glow); }
+    
+    .news-item { 
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      backdrop-filter: blur(16px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; overflow: hidden;
+    }
+    .news-item::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--emerald), var(--accent), var(--purple)); transform: scaleX(0); transition: transform 0.3s; }
+    .news-item:hover { transform: translateY(-3px); box-shadow: var(--glow); }
+    .news-item:hover::before { transform: scaleX(1); }
+    
+    .weather-display { 
+      background: linear-gradient(135deg, var(--accent)11, var(--purple)11); 
+      border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
+    }
+    .weather-display::before { content: ""; position: absolute; inset: 0; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.02) 50%, transparent 70%); animation: shimmer 3s ease-in-out infinite; }
+    
+    .quote-display { 
+      background: linear-gradient(135deg, var(--purple)11, var(--gold)11); 
+      border-radius: 20px; padding: 24px; position: relative;
+    }
+    
+    .skeleton { 
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+    }
+    
+    .ticker-glow { box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 20px var(--accent-glow); }
+    
+    dialog { 
+      background: var(--surface); border: 1px solid var(--border); color: var(--text); 
+      border-radius: 32px; backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--shadow), var(--glow);
+      animation: slideIn 0.4s ease;
+    }
+    dialog::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    
+    .status-indicator { 
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; 
+      background: var(--emerald); box-shadow: 0 0 8px var(--emerald); 
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .premium-scroll { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+    .premium-scroll::-webkit-scrollbar { width: 6px; }
+    .premium-scroll::-webkit-scrollbar-track { background: transparent; }
+    .premium-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
   </style>
-  <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Helvetica','Arial'] } } } };
-  </script>
 </head>
-<body class="h-full selection:bg-cyan-400/25">
-  <div id="offlineBanner" class="text-center text-sm py-1 px-3 card-2 mx-auto max-w-6xl mt-2 hidden">Offline — showing cached headlines</div>
-
-  <header class="sticky top-0 z-30 glass">
-    <div class="mx-auto max-w-6xl px-4 py-3 flex flex-wrap items-center gap-3">
-      <div class="text-xl font-semibold tracking-tight"><span class="brand">Morning News</span></div>
-      <div class="ml-auto flex items-center gap-2 text-sm">
-        <label class="inline-flex items-center gap-2 cursor-pointer"><span class="hidden sm:inline muted">Density</span>
-          <select id="densitySelect" class="input text-sm"><option value="comfy">Comfy</option><option value="compact">Compact</option></select>
-        </label>
-        <label class="inline-flex items-center gap-2 cursor-pointer"><span class="hidden sm:inline muted">Private</span><input id="privateToggle" type="checkbox" class="accent-cyan-400"></label>
-        <button id="themeToggle" class="btn-ghost" title="Toggle theme (t)">🌓</button>
-      </div>
-      <div class="w-full sm:w-auto sm:ml-4 flex-1">
-        <div class="relative">
-          <input id="search" type="search" placeholder="Search headlines (/)" class="w-full sm:w-96 input">
-          <div class="absolute right-2 top-1/2 -translate-y-1/2 text-xs muted"><span class="kbd">/</span></div>
+<body class="h-full">
+  <header class="sticky top-0 z-50 glass">
+    <div class="mx-auto max-w-7xl px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <div class="text-2xl font-bold brand">NEXUS</div>
+          <div class="hidden md:flex items-center gap-1 text-sm font-medium" style="color:var(--muted)">
+            <div class="status-indicator"></div>
+            LIVE INTELLIGENCE
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <select id="density" class="input text-sm font-medium">
+            <option value="comfy">Executive</option>
+            <option value="compact">Compact</option>
+          </select>
+          <label class="flex items-center gap-2 text-sm font-medium">
+            <input id="private" type="checkbox" class="w-4 h-4 accent-cyan-400">
+            <span class="hidden sm:inline" style="color:var(--muted)">Stealth</span>
+          </label>
+          <button id="theme" class="btn">🌓</button>
         </div>
       </div>
+      <div class="mt-4">
+        <input id="search" type="search" placeholder="Search intelligence feeds (/)" 
+               class="w-full input text-lg font-medium">
+      </div>
     </div>
-    <div class="border-t divider">
-      <div class="mx-auto max-w-6xl">
-        <div id="tvContainer" class="relative">
-          <div id="tickerFallback" class="ticker-fallback px-4 py-2 text-sm">
-            <div class="ticker-fallback-inner"><span class="brand">S&amp;P 500 · Dow · Nasdaq · FTSE 100 · DAX · Nikkei 225 · Crude Oil · Gold · BTC/USD</span></div>
+    <div class="border-t ticker-glow" style="border-color:var(--border)">
+      <div class="mx-auto max-w-7xl">
+        <div id="tickerContainer" class="relative">
+          <div id="tickerFallback" class="px-6 py-3 text-sm font-medium brand overflow-hidden whitespace-nowrap">
+            <div class="inline-block animate-pulse">⚡ LIVE MARKETS ⚡ S&P 500 • DOW • NASDAQ • FTSE • DAX • NIKKEI • OIL • GOLD • BTC</div>
           </div>
           <div id="tradingview-widget" class="hidden"></div>
         </div>
@@ -114,471 +186,444 @@
     </div>
   </header>
 
-  <section class="mx-auto max-w-6xl px-4 mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="card p-4">
-      <div class="flex items-center justify-between">
-        <div class="font-semibold">Weather</div>
-        <div class="text-xs flex items-center gap-3 muted">
-          <button id="setCityBtn" class="underline">Set City</button>
-          <button id="refreshWeatherBtn" class="underline">Refresh</button>
+  <main class="mx-auto max-w-7xl px-6 py-8">
+    <section class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-lg font-semibold flex items-center gap-2">
+            🌍 <span>Climate Intel</span>
+          </div>
+          <button id="setLocation" class="btn text-sm">Configure</button>
+        </div>
+        <div id="weather" class="weather-display text-center">
+          <div class="text-sm font-medium" style="color:var(--muted)">Getting your location...</div>
         </div>
       </div>
-      <div id="weather" class="mt-2 text-sm muted">Loading weather…</div>
-    </div>
-    <div class="card col-span-1 md:col-span-2 p-4">
-      <div class="flex items-center justify-between">
-        <div class="font-semibold">Inspiration</div>
-        <div class="text-xs muted">Why this: <span id="quoteWhy">focus</span></div>
+      
+      <div class="card lg:col-span-3 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-lg font-semibold flex items-center gap-2">
+            💎 <span>Executive Wisdom</span>
+          </div>
+          <div class="text-xs font-medium px-3 py-1 rounded-full" style="background:var(--accent-glow); color:var(--accent)">CURATED</div>
+        </div>
+        <div class="quote-display">
+          <blockquote id="quote" class="text-xl font-medium leading-relaxed"></blockquote>
+          <figcaption id="quoteBy" class="mt-4 text-sm font-medium" style="color:var(--muted)"></figcaption>
+        </div>
       </div>
-      <figure class="mt-2">
-        <blockquote id="quoteText" class="text-lg leading-relaxed"></blockquote>
-        <figcaption id="quoteBy" class="mt-2 text-sm muted"></figcaption>
-      </figure>
-    </div>
-  </section>
+    </section>
 
-  <nav class="mx-auto max-w-6xl px-4 mt-4">
-    <div id="chips" class="flex flex-wrap gap-2 text-sm"></div>
-    <div class="mt-2 text-xs muted flex items-center gap-2">
-      <button id="pinBtn" class="btn-ghost">📌 Pin this section</button>
-      <span>Shortcuts: <span class="kbd">1–6</span>, <span class="kbd">r</span> refresh</span>
-    </div>
-  </nav>
+    <nav class="mb-8">
+      <div id="chips" class="flex flex-wrap gap-3 justify-center"></div>
+    </nav>
 
-  <main class="mx-auto max-w-6xl px-4 mt-4">
-    <div id="status" class="text-sm muted"></div>
-    <ul id="newsList" class="mt-3 space-y-2"></ul>
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <div id="status" class="flex items-center gap-2 text-sm font-medium" style="color:var(--muted)">
+          <div class="status-indicator"></div>
+          <span>Processing feeds...</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-medium" style="color:var(--muted)">
+          <span>⌨️ Shortcuts:</span>
+          <kbd class="px-2 py-1 rounded bg-opacity-50" style="background:var(--surface); border:1px solid var(--border)">/</kbd>
+          <kbd class="px-2 py-1 rounded bg-opacity-50" style="background:var(--surface); border:1px solid var(--border)">R</kbd>
+          <kbd class="px-2 py-1 rounded bg-opacity-50" style="background:var(--surface); border:1px solid var(--border)">1-5</kbd>
+        </div>
+      </div>
+      
+      <div id="news" class="premium-scroll space-y-4 max-h-screen overflow-y-auto"></div>
+    </section>
   </main>
 
-  <footer class="sticky bottom-0 z-20 mt-10 glass">
-    <div class="mx-auto max-w-6xl px-4 py-2 text-xs muted flex items-center justify-between">
-      <div>⌨️ <span class="kbd">/</span> search · <span class="kbd">t</span> theme · <span class="kbd">r</span> refresh · <span class="kbd">1–6</span> sections</div>
-      <div><a class="underline" href="#" id="aboutLink">About</a></div>
+  <dialog id="reader" class="w-full max-w-5xl p-0 glass-lg">
+    <div class="flex items-center justify-between px-8 py-6" style="border-bottom:1px solid var(--border)">
+      <div id="readerTitle" class="text-xl font-semibold">Document Analyzer</div>
+      <div class="flex items-center gap-3">
+        <button id="fontUp" class="btn">A+</button>
+        <button id="fontDown" class="btn">A-</button>
+        <button id="speak" class="btn">🔊 Narrate</button>
+        <button id="closeReader" class="btn">✕</button>
+      </div>
     </div>
-  </footer>
-
-  <dialog id="reader" class="w-full max-w-3xl p-0">
-    <form method="dialog">
-      <div class="flex items-center justify-between px-4 py-3 border-b divider">
-        <div class="font-semibold" id="readerTitle">Reader</div>
-        <div class="flex items-center gap-2 text-sm">
-          <label class="inline-flex items-center gap-2">A<sup>-</sup><input id="fontDown" type="button" class="btn-ghost" value="-"></label>
-          <label class="inline-flex items-center gap-2">A<sup>+</sup><input id="fontUp" type="button" class="btn-ghost" value="+"></label>
-          <label class="inline-flex items-center gap-2">LH<input id="lhUp" type="button" class="btn-ghost" value="+"></label>
-          <button id="readerSpeak" type="button" class="btn-ghost">🔊 Listen</button>
-          <button id="readerClose" class="btn-ghost">✕</button>
-        </div>
-      </div>
-    </form>
-    <div id="readerBody" class="p-4 leading-relaxed"></div>
-    <div class="p-4 pt-0 text-right text-xs muted"><a class="underline" id="readerOpen" target="_blank" rel="noopener">Open original</a></div>
-  </dialog>
-
-  <dialog id="about" class="w-full max-w-lg p-0">
-    <form method="dialog">
-      <div class="flex items-center justify-between px-4 py-3 border-b divider">
-        <div class="font-semibold">About this page</div>
-        <button class="btn-ghost">✕</button>
-      </div>
-    </form>
-    <div class="p-4 text-sm space-y-2">
-      <p>This is a free, single-file morning dashboard. It uses public RSS feeds via AllOrigins, article text via Jina reader, and weather via Open‑Meteo. A Service Worker caches the shell and last good data for offline reading.</p>
-      <ul class="list-disc pl-5 muted">
-        <li>Shortcuts: <span class="kbd">/</span> search, <span class="kbd">t</span> theme, <span class="kbd">r</span> refresh, <span class="kbd">1–6</span> section jump</li>
-        <li>Density toggle and reader font/line-height persist</li>
-        <li>Private Mode disables IP lookup; set your city manually</li>
-      </ul>
+    <div id="readerBody" class="p-8 premium-scroll max-h-96 overflow-y-auto"></div>
+    <div class="px-8 py-4 text-right">
+      <a id="readerOpen" target="_blank" class="text-sm font-medium underline hover:no-underline" style="color:var(--accent)">View Source →</a>
     </div>
   </dialog>
 
   <script>
-  const $ = sel => document.querySelector(sel);
-  const LS = {
-    get: (k, d=null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
-    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
-    del: (k) => { try { localStorage.removeItem(k); } catch {} }
-  };
+    const $ = s => document.querySelector(s);
+    const store = {
+      get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+    };
 
-  const STATE = {
-    sectionOrder: ["Top","National","Ohio","Columbus","Home Lending","AI"],
-    currentSection: "Top",
-    pinnedSection: LS.get('pinnedSection','Top'),
-    density: LS.get('density','comfy'),
-    privateMode: LS.get('privateMode', false),
-    fontScale: LS.get('readerFontScale', 1.0),
-    lineHeight: LS.get('readerLineHeight', 1.6),
-    city: LS.get('city', ""),
-    coords: LS.get('coords', null),
-    prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  };
-  if (STATE.prefersReducedMotion) document.documentElement.classList.add('no-motion');
+    const state = {
+      sections: ["Top Stories", "National News", "Columbus News", "Home Lending", "AI"],
+      current: "Top Stories",
+      density: store.get('density', 'comfy'),
+      private: store.get('private', false),
+      location: store.get('location', ''),
+      fontSize: store.get('fontSize', 1.1)
+    };
 
-  const FEEDS = {
-  "Top": [
-    "https://feeds.reuters.com/reuters/topNews",
-    "https://feeds.npr.org/1001/rss.xml",
-    "http://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.pbs.org/newshour/feeds/rss"
-  ],
-  "National": [
-    "https://feeds.npr.org/1003/rss.xml",
-    "https://rss.nytimes.com/services/xml/rss/nyt/US.xml",
-    "http://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://www.pbs.org/newshour/feeds/rss"
-  ],
-  "Ohio": [
-    "https://www.cleveland.com/arc/outboundfeeds/rss/?outputType=xml",
-    "https://www.dispatch.com/feeds/news?x=1",
-    "https://ohiocapitaljournal.com/feed/"
-  ],
-  "Columbus": [
-    "https://www.columbusunderground.com/rss/",
-    "https://radio.wosu.org/rss.xml",
-    "https://www.nbc4i.com/feed/"
-  ],
-  "Home Lending": [
-    "https://www.mortgagenewsdaily.com/rss",
-    "https://newslink.mba.org/feed/",
-    "https://www.housingwire.com/rss",
-    "https://www.nationalmortgagenews.com/feed",
-    "https://www.consumerfinance.gov/about-us/newsroom/feed/",
-    "https://www.fanniemae.com/rss/rss.xml"
-  ],
-  "AI": [
-    "https://openai.com/blog/rss",
-    "https://ai.googleblog.com/feeds/posts/default",
-    "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
-    "https://news.mit.edu/rss/topic/artificial-intelligence",
-    "https://venturebeat.com/category/ai/feed/",
-    "https://www.theverge.com/artificial-intelligence/rss/index.xml"
-  ]
-};
-  const TTL_MIN = 12, FEED_TIMEOUT = 12000;
-
-  const QUOTES = [
-    { text: "You do not rise to the level of your goals. You fall to the level of your systems.", by: "James Clear", why: "consistency" },
-    { text: "Focus is saying no.", by: "Steve Jobs", why: "focus" },
-    { text: "What you do every day matters more than what you do once in a while.", by: "Gretchen Rubin", why: "habits" },
-    { text: "If it costs you your peace, it's too expensive.", by: "Unknown", why: "clarity" },
-    { text: "The man who moves a mountain begins by carrying away small stones.", by: "Confucius", why: "momentum" }
-  ];
-
-  function applyDensity() {
-    const list = $("#newsList");
-    if (!list) return;
-    if (STATE.density === "compact") { list.classList.add("divide-y","divide-white/5"); list.classList.remove("space-y-2"); }
-    else { list.classList.add("space-y-2"); list.classList.remove("divide-y","divide-white/5"); }
-    $("#densitySelect").value = STATE.density; LS.set('density', STATE.density);
-  }
-  function setTheme(t) {
-    const root = document.documentElement;
-    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) root.classList.add('dark');
-    else root.classList.remove('dark');
-    LS.set('theme', t || 'system');
-  }
-  function setupShortcuts() {
-    document.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== $("#search")) { e.preventDefault(); $("#search").focus(); return; }
-      if (e.key.toLowerCase() === 't') { e.preventDefault(); $("#themeToggle").click(); }
-      if (e.key.toLowerCase() === 'r') { e.preventDefault(); refreshCurrentSection(); }
-      if (/^[1-6]$/.test(e.key)) { const idx = Number(e.key) - 1; const name = STATE.sectionOrder[idx]; if (name) selectSection(name); }
-    });
-  }
-  function loadTradingView() {
-    const container = document.getElementById('tradingview-widget');
-    container.classList.remove('hidden');
-    const script = document.createElement('script');
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
-    script.text = JSON.stringify({
-      "symbols": [
-        {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"}, {"proName": "DJI", "title": "Dow"},
-        {"proName": "NASDAQ:IXIC", "title": "Nasdaq"}, {"proName": "CAPITALCOM:UK100", "title": "FTSE 100"},
-        {"proName": "XETR:DAX", "title": "DAX"}, {"proName": "TVC:NI225", "title": "Nikkei 225"},
-        {"proName": "TVC:USOIL", "title": "Crude Oil"}, {"proName": "TVC:GOLD", "title": "Gold"},
-        {"proName": "BITSTAMP:BTCUSD", "title": "BTC/USD"}
+    const feeds = {
+      "Top Stories": [
+        "https://feeds.reuters.com/reuters/topNews",
+        "https://feeds.npr.org/1001/rss.xml", 
+        "http://feeds.bbci.co.uk/news/rss.xml",
+        "https://rss.cnn.com/rss/edition.rss"
       ],
-      "showSymbolLogo": true, "isTransparent": true,
-      "colorTheme": document.documentElement.classList.contains('dark') ? "dark" : "light",
-      "displayMode": "adaptive", "locale": "en"
-    });
-    document.getElementById('tvContainer').appendChild(script);
-    setTimeout(() => { const has = document.querySelector('#tradingview-widget iframe, #tradingview-widget div'); if (has) $("#tickerFallback").style.display = 'none'; }, 3000);
-  }
+      "National News": [
+        "https://feeds.npr.org/1003/rss.xml",
+        "https://rss.nytimes.com/services/xml/rss/nyt/US.xml",
+        "https://www.washingtonpost.com/rss/national/",
+        "https://feeds.usatoday.com/usatoday-NewsTopStories"
+      ],
+      "Columbus News": [
+        "https://www.dispatch.com/feeds/news?x=1",
+        "https://radio.wosu.org/rss.xml",
+        "https://www.columbusunderground.com/rss/",
+        "https://www.cleveland.com/arc/outboundfeeds/rss/?outputType=xml"
+      ],
+      "Home Lending": [
+        "https://www.mortgagenewsdaily.com/rss",
+        "https://newslink.mba.org/feed/",
+        "https://www.housingwire.com/rss",
+        "https://www.inman.com/feed/"
+      ],
+      "AI": [
+        "https://openai.com/blog/rss",
+        "https://ai.googleblog.com/feeds/posts/default",
+        "https://www.theverge.com/rss/index.xml",
+        "https://techcrunch.com/category/artificial-intelligence/feed/"
+      ]
+    };
 
-  // ========== WEATHER (Fahrenheit + 12-hour times) ==========
-  async function geocodeCity(name) {
-    const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`);
-    const gj = await g.json();
-    if (gj?.results?.length) { const r = gj.results[0]; return { lat: r.latitude, lon: r.longitude, display: r.name + (r.admin1 ? ", " + r.admin1 : "") }; }
-    return null;
-  }
-  async function reverseGeocode(lat, lon) {
-    const g = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`);
-    const gj = await g.json();
-    if (gj?.results?.length) { const r = gj.results[0]; return r.name + (r.admin1 ? ", "+r.admin1 : ""); }
-    return "";
-  }
-  async function resolveWeatherLocation() {
-    if (STATE.privateMode) {
-      if (STATE.city) { const geo = await geocodeCity(STATE.city); if (geo) return { lat: geo.lat, lon: geo.lon, city: geo.display }; }
-      return null;
+    const quotes = [
+      { text: "The future belongs to those who understand that the only constant is change.", by: "Jeff Bezos" },
+      { text: "Innovation distinguishes between a leader and a follower.", by: "Steve Jobs" },
+      { text: "Your most unhappy customers are your greatest source of learning.", by: "Bill Gates" },
+      { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", by: "Winston Churchill" },
+      { text: "The way to get started is to quit talking and begin doing.", by: "Walt Disney" }
+    ];
+
+    function setTheme(dark) {
+      const isDark = dark ?? !document.documentElement.classList.contains('dark');
+      document.documentElement.classList.toggle('dark', isDark);
+      store.set('theme', isDark);
+      setTimeout(() => loadTradingView(), 100);
     }
-    if (STATE.city) { const geo = await geocodeCity(STATE.city); if (geo) return { lat: geo.lat, lon: geo.lon, city: geo.display }; }
-    try {
-      const ip = await fetch('https://ip-api.open-meteo.com/v1/ip?timezone=auto', { cache: 'no-store' });
-      if (ip.ok) { const j = await ip.json(); const city = j.city || j.timezone || ""; return { lat: j.latitude, lon: j.longitude, city }; }
-    } catch {}
-    try {
-      const coords = await new Promise((res, rej) => {
-        if (!navigator.geolocation) return rej(new Error('no geo'));
-        navigator.geolocation.getCurrentPosition(pos => res(pos.coords), err => rej(err), { maximumAge: 600000, timeout: 6000 });
+
+    function loadTradingView() {
+      const container = $('#tradingview-widget');
+      const fallback = $('#tickerFallback');
+      
+      container.innerHTML = '';
+      container.classList.add('hidden');
+      fallback.style.display = 'block';
+      
+      const script = document.createElement('script');
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+        symbols: [
+          {proName: "FOREXCOM:SPXUSD", title: "S&P 500"},
+          {proName: "DJI", title: "Dow Jones"},
+          {proName: "NASDAQ:IXIC", title: "Nasdaq"},
+          {proName: "CAPITALCOM:UK100", title: "FTSE 100"},
+          {proName: "XETR:DAX", title: "DAX"},
+          {proName: "TVC:NI225", title: "Nikkei"},
+          {proName: "TVC:USOIL", title: "Crude Oil"},
+          {proName: "TVC:GOLD", title: "Gold"},
+          {proName: "BITSTAMP:BTCUSD", title: "Bitcoin"}
+        ],
+        showSymbolLogo: true,
+        isTransparent: true,
+        colorTheme: document.documentElement.classList.contains('dark') ? "dark" : "light",
+        displayMode: "adaptive",
+        locale: "en"
       });
-      const city = await reverseGeocode(coords.latitude, coords.longitude);
-      return { lat: coords.latitude, lon: coords.longitude, city: city || "" };
-    } catch {}
-    return null;
-  }
-  function fmt12(tstr) {
-    if (!tstr) return '--:--';
-    // Open‑Meteo returns local times without timezone suffix when timezone=auto—this will be treated as local by JS.
-    const d = new Date(tstr);
-    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  }
-  async function loadWeather() {
-    const el = $("#weather"); el.textContent = 'Loading weather…';
-    try {
-      const info = await resolveWeatherLocation();
-      if (!info) { el.textContent = 'Set your city to show weather.'; return; }
-      STATE.city = info.city || STATE.city || ''; LS.set('city', STATE.city); LS.set('coords', { lat: info.lat, lon: info.lon });
-      const wx = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${info.lat}&longitude=${info.lon}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&temperature_unit=fahrenheit&wind_speed_unit=mph`);
-      const w = await wx.json();
-      const cityLabel = STATE.city || 'Your city';
-      const t = Math.round(w.current.temperature_2m);
-      const hi = Math.round(w.daily.temperature_2m_max[0]);
-      const lo = Math.round(w.daily.temperature_2m_min[0]);
-      const sr = fmt12(w.daily.sunrise[0]);
-      const ss = fmt12(w.daily.sunset[0]);
-      el.innerHTML = `
-        <div class="text-sm"><span class="font-semibold">${cityLabel}</span></div>
-        <div class="mt-2 flex items-center gap-4">
-          <div class="text-3xl font-bold" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent;">${t}°F</div>
-          <div class="text-sm muted">H: ${hi}°F · L: ${lo}°F</div>
-        </div>
-        <div class="mt-2 text-xs muted">Sunrise ${sr} · Sunset ${ss}</div>
-      `;
-    } catch (e) { el.innerHTML = '<div class="text-rose-400">Weather unavailable.</div>'; }
-  }
-  document.getElementById('setCityBtn').addEventListener('click', async () => {
-    const c = prompt('Enter city (e.g., Columbus):', STATE.city || '');
-    if (c !== null) { STATE.city = c.trim(); STATE.coords = null; LS.set('city', STATE.city); LS.del('coords'); loadWeather(); }
-  });
-  document.getElementById('refreshWeatherBtn').addEventListener('click', loadWeather);
-
-  // ===== Quotes =====
-  function loadQuote() { const q = QUOTES[Math.floor(Math.random()*QUOTES.length)]; document.getElementById('quoteText').textContent = `“${q.text}”`; document.getElementById('quoteBy').textContent = `— ${q.by}`; document.getElementById('quoteWhy').textContent = q.why; }
-
-  // ===== Chips / Sections / News (unchanged aside from visuals) =====
-  function renderChips() {
-    const chips = document.getElementById('chips'); chips.innerHTML = '';
-    STATE.sectionOrder.forEach((s) => {
-      const btn = document.createElement('button');
-      btn.className = "chip " + (STATE.currentSection === s ? "active" : ""); btn.textContent = s; btn.onclick = () => selectSection(s);
-      chips.appendChild(btn);
-    });
-  }
-  document.getElementById('pinBtn').addEventListener('click', () => { STATE.pinnedSection = STATE.currentSection; LS.set('pinnedSection', STATE.pinnedSection); const st = document.getElementById('status'); st.textContent = `Pinned: ${STATE.pinnedSection}`; setTimeout(()=> st.textContent = '', 1500); });
-
-  function proxy(url) { return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`; }
-  function cacheKey(section) { return `feed.${section}`; }
-  function cacheTimeKey(section) { return `feed.${section}.ts`; }
-  function parseRSS(xmlText) {
-    const doc = new DOMParser().parseFromString(xmlText, "application/xml");
-    let items = [...doc.querySelectorAll('item')].map(it => ({
-      title: it.querySelector('title')?.textContent?.trim() || 'Untitled',
-      link: it.querySelector('link')?.textContent?.trim(),
-      pubDate: it.querySelector('pubDate')?.textContent || it.querySelector('updated')?.textContent || '',
-      description: it.querySelector('description')?.textContent || '',
-      media: it.querySelector('media\\:content, content, enclosure')?.getAttribute('url') || ''
-    }));
-    if (items.length === 0) {
-      items = [...doc.querySelectorAll('entry')].map(en => ({
-        title: en.querySelector('title')?.textContent?.trim() || 'Untitled',
-        link: en.querySelector('link')?.getAttribute('href'),
-        pubDate: en.querySelector('updated')?.textContent || en.querySelector('published')?.textContent || '',
-        description: en.querySelector('summary')?.textContent || '',
-        media: en.querySelector('link[rel="enclosure"]')?.getAttribute('href') || ''
-      }));
-    }
-    return items;
-  }
-  function faviconFor(url) { try { return `https://www.google.com/s2/favicons?sz=64&domain=${(new URL(url)).hostname}`; } catch { return ''; } }
-  function mergeDedup(a, b) { const map = new Map(); [...a, ...b].forEach(it => { if (it && it.link) map.set(it.link, it); }); return Array.from(map.values()).sort((x,y)=> (y.time||0)-(x.time||0)).slice(0, 60); }
-  function showSkeletons(n=6) {
-    const list = document.getElementById('newsList'); list.innerHTML = '';
-    for (let i=0;i<n;i++) {
-      const li = document.createElement('li');
-      li.className = "news-row card-2 p-3 skeleton"; li.style.minHeight = '84px';
-      li.innerHTML = `<div class="h-5 w-28 rounded mb-2" style="background:var(--surface);"></div>
-                      <div class="h-4 w-5/6 rounded mb-1" style="background:var(--surface);"></div>
-                      <div class="h-4 w-4/6 rounded" style="background:var(--surface);"></div>`;
-      list.appendChild(li);
-    }
-  }
-  function renderItems(items) {
-    const list = document.getElementById('newsList');
-    const q = document.getElementById('search').value.toLowerCase().trim();
-    const filtered = q ? items.filter(x => ((x.title||'')+' '+(x.description||'')).toLowerCase().includes(q)) : items;
-    list.innerHTML = '';
-    for (const it of filtered) {
-      const li = document.createElement('li');
-      li.className = "news-row card hover:shadow-xl transition";
-      li.innerHTML = `
-        <a href="${it.link}" target="_blank" rel="noopener" class="block p-3">
-          <div class="flex gap-3">
-            <div class="w-14 h-14 rounded-lg overflow-hidden" style="background:var(--surface-2);">
-              <img class="w-full h-full object-cover blur-up" loading="lazy" alt="thumbnail"
-                 src="${it.media || faviconFor(it.link)}"
-                 onload="this.classList.add('loaded')"
-                 onerror="this.src='${faviconFor(it.link)}'; this.classList.add('loaded')">
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="text-sm muted truncate">${it.source || (new URL(it.link)).hostname.replace(/^www\./,'')}</div>
-              <div class="font-medium leading-snug">${it.title}</div>
-              <div class="text-xs muted mt-1 line-clamp-2">${(it.description || '').replace(/<[^>]+>/g,'').slice(0,160)}…</div>
-              <div class="flex items-center gap-3 mt-2 text-xs muted">
-                <button class="underline listen" data-title="${(it.title || '').replace(/"/g,'&quot;')}" data-link="${it.link}">🔊 Listen</button>
-                <button class="underline read" data-link="${it.link}" data-title="${(it.title || '').replace(/"/g,'&quot;')}">📰 Read</button>
-                <span>${new Date(it.time||Date.now()).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        </a>
-      `;
-      list.appendChild(li);
-    }
-    list.querySelectorAll('button.listen').forEach(b => b.addEventListener('click', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const t = b.getAttribute('data-title');
-      speakText(`${t}.`);
-    }));
-    list.querySelectorAll('button.read').forEach(b => b.addEventListener('click', async (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const link = b.getAttribute('data-link');
-      const title = b.getAttribute('data-title');
-      openReader(title, link);
-    }));
-  }
-  let aborter = null;
-  async function fetchFeed(url) {
-    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), FEED_TIMEOUT);
-    try {
-      const r = await fetch(proxy(url), { signal: ctrl.signal });
-      const txt = await r.text();
-      return parseRSS(txt).map(x => ({ ...x, source: (new URL(x.link)).hostname.replace(/^www\./,''), time: x.pubDate ? new Date(x.pubDate).getTime() : Date.now() }));
-    } finally { clearTimeout(to); }
-  }
-  async function loadSection(section) {
-    STATE.currentSection = section; renderChips();
-    document.getElementById('status').textContent = 'Loading…'; showSkeletons(6);
-    if (aborter) aborter.abort(); aborter = new AbortController();
-
-    const ts = LS.get(cacheTimeKey(section), 0);
-    const ageMin = (Date.now() - ts) / 60000;
-    if (ageMin < TTL_MIN) {
-      const cached = LS.get(cacheKey(section), []);
-      if (cached.length) { renderItems(cached); document.getElementById('status').textContent = `Loaded from cache (${Math.round(ageMin)}m old).`; }
-    }
-
-    try {
-      const urls = FEEDS[section] || [];
-      let items = [];
-      if (urls[0]) {
-        try {
-          const first = await fetchFeed(urls[0]);
-          items = mergeDedup(items, first);
-          renderItems(items);
-          document.getElementById('status').textContent = `Updated from ${new URL(urls[0]).hostname}`;
-        } catch {}
-      }
-      const rest = urls.slice(1).map(u => fetchFeed(u).catch(()=>[]));
-      const batches = await Promise.all(rest);
-      for (const b of batches) items = mergeDedup(items, b);
-      if (items.length) {
-        renderItems(items);
-        document.getElementById('status').textContent = `Updated ${new Date().toLocaleTimeString()}`;
-        LS.set(cacheKey(section), items); LS.set(cacheTimeKey(section), Date.now());
-      } else { document.getElementById('status').textContent = 'No items from feeds.'; }
-    } catch (e) {
-      document.getElementById('offlineBanner').classList.remove('hidden');
-      document.getElementById('status').textContent = 'Network issue — showing last good headlines if available.';
-      const cached = LS.get(cacheKey(section), []); if (cached.length) renderItems(cached);
-    }
-  }
-
-  // TTS + Reader
-  let speechUtter = null;
-  function speakText(text) { if (!('speechSynthesis' in window)) { alert('TTS not supported in this browser.'); return; } if (speechUtter) { window.speechSynthesis.cancel(); speechUtter = null; } speechUtter = new SpeechSynthesisUtterance(text); speechUtter.rate = 1.0; speechUtter.pitch = 1.0; window.speechSynthesis.speak(speechUtter); }
-  async function openReader(title, url) {
-    document.getElementById('readerTitle').textContent = title;
-    document.getElementById('readerBody').innerHTML = '<div class="muted p-4">Loading article…</div>';
-    document.getElementById('readerOpen').href = url;
-    try {
-      const inner = url.startsWith('https://') ? 'https://' : 'http://';
-      const target = 'https://r.jina.ai/' + inner + url.replace(/^https?:\/\//,'');
-      const res = await fetch(target); const txt = await res.text();
-      const safe = txt.replace(/[<>]/g, m => ({'<':'&lt;','>':'&gt;'}[m]));
-      document.getElementById('readerBody').style.fontSize = (STATE.fontScale*1.0)+'rem';
-      document.getElementById('readerBody').style.lineHeight = STATE.lineHeight;
-      document.getElementById('readerBody').innerHTML = '<pre class="whitespace-pre-wrap">'+safe+'</pre>';
-    } catch { document.getElementById('readerBody').innerHTML = '<div class="text-rose-400 p-4">Could not load article.</div>'; }
-    document.getElementById('reader').showModal();
-  }
-  document.getElementById('readerClose').addEventListener('click', () => { document.getElementById('reader').close(); });
-  document.getElementById('readerSpeak').addEventListener('click', () => { const t = document.getElementById('readerTitle').textContent || ''; const body = document.getElementById('readerBody').innerText || ''; speakText(`${t}. ${body.slice(0, 1200)}`); });
-  document.getElementById('fontUp').addEventListener('click', () => { STATE.fontScale = Math.min(STATE.fontScale + 0.1, 1.6); document.getElementById('readerBody').style.fontSize = (STATE.fontScale*1.0)+'rem'; LS.set('readerFontScale', STATE.fontScale); });
-  document.getElementById('fontDown').addEventListener('click', () => { STATE.fontScale = Math.max(STATE.fontScale - 0.1, 0.8); document.getElementById('readerBody').style.fontSize = (STATE.fontScale*1.0)+'rem'; LS.set('readerFontScale', STATE.fontScale); });
-  document.getElementById('lhUp').addEventListener('click', () => { STATE.lineHeight = Math.min(STATE.lineHeight + 0.1, 2.0); document.getElementById('readerBody').style.lineHeight = STATE.lineHeight; LS.set('readerLineHeight', STATE.lineHeight); });
-
-  // Search / Sections / Toggles / Connectivity / SW
-  document.getElementById('search').addEventListener('input', () => { const items = LS.get(cacheKey(STATE.currentSection), []); if (items.length) renderItems(items); });
-  function selectSection(s) { STATE.currentSection = s; LS.set('lastSection', s); renderChips(); loadSection(s); }
-  function refreshCurrentSection() { LS.del(cacheKey(STATE.currentSection)); LS.del(cacheTimeKey(STATE.currentSection)); loadSection(STATE.currentSection); }
-  document.getElementById('densitySelect').addEventListener('change', (e) => { STATE.density = e.target.value; applyDensity(); });
-  document.getElementById('privateToggle').checked = !!STATE.privateMode;
-  document.getElementById('privateToggle').addEventListener('change', (e) => { STATE.privateMode = e.target.checked; LS.set('privateMode', STATE.privateMode); if (STATE.privateMode) document.getElementById('weather').textContent = 'Private mode enabled — set your city.'; else loadWeather(); });
-  document.getElementById('themeToggle').addEventListener('click', () => { const dark = !document.documentElement.classList.contains('dark'); setTheme(dark ? 'dark' : 'light'); document.getElementById('tradingview-widget').innerHTML = ''; loadTradingView(); });
-  function updateOfflineUI() { if (!navigator.onLine) document.getElementById('offlineBanner').classList.remove('hidden'); else document.getElementById('offlineBanner').classList.add('hidden'); }
-  window.addEventListener('online', updateOfflineUI); window.addEventListener('offline', updateOfflineUI);
-  async function registerSW() {
-    if (!('serviceWorker' in navigator)) return; if (location.protocol === 'file:') return;
-    const swCode = `
-      const CACHE = 'morning-news-neo-f';
-      self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./']))); });
-      self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
-      self.addEventListener('fetch', e => {
-        const url = new URL(e.request.url);
-        if (url.origin === location.origin) { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); }
-        else if (/allorigins|open-meteo|jina\\.ai/.test(url.hostname)) {
-          e.respondWith((async () => { try { const res = await fetch(e.request); const c = await caches.open(CACHE); c.put(e.request, res.clone()); return res; } catch (err) { const cached = await caches.match(e.request); if (cached) return cached; throw err; } })());
+      
+      container.appendChild(script);
+      
+      setTimeout(() => {
+        if (container.querySelector('iframe')) {
+          container.classList.remove('hidden');
+          fallback.style.display = 'none';
         }
+      }, 3000);
+    }
+
+    function renderChips() {
+      $('#chips').innerHTML = state.sections.map(s => 
+        `<button class="chip ${s === state.current ? 'active' : ''}" onclick="selectSection('${s}')">${s}</button>`
+      ).join('');
+    }
+
+    function selectSection(section) {
+      state.current = section;
+      renderChips();
+      loadNews();
+    }
+
+    async function getLocationWeather() {
+      if (!navigator.geolocation) {
+        $('#weather').innerHTML = '<div class="text-red-400 text-sm font-medium">⚠️ Geolocation not supported</div>';
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          const {latitude: lat, longitude: lon} = position.coords;
+          // Get city name from coordinates
+          const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`).then(r => r.json());
+          const city = geo.city || geo.locality || 'Unknown Location';
+          
+          // Get weather data
+          const w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit`).then(r => r.json());
+          const temp = Math.round(w.current.temperature_2m);
+          const hi = Math.round(w.daily.temperature_2m_max[0]);
+          const lo = Math.round(w.daily.temperature_2m_min[0]);
+          
+          state.location = city;
+          store.set('location', city);
+          
+          $('#weather').innerHTML = `
+            <div class="text-sm font-medium mb-2" style="color:var(--muted)">${city}</div>
+            <div class="text-4xl font-bold brand mb-2">${temp}°F</div>
+            <div class="text-xs font-medium" style="color:var(--muted)">Range: ${lo}°F → ${hi}°F</div>
+          `;
+        } catch (e) {
+          $('#weather').innerHTML = '<div class="text-red-400 text-sm font-medium">⚠️ Weather data unavailable</div>';
+        }
+      }, () => {
+        $('#weather').innerHTML = '<div class="text-sm font-medium" style="color:var(--muted)">Location access denied. <br><button onclick="promptLocation()" class="text-cyan-400 underline">Enter manually</button></div>';
       });
-    `;
-    const blob = new Blob([swCode], {type:'text/javascript'});
-    const url = URL.createObjectURL(blob);
-    try { await navigator.serviceWorker.register(url, {scope: './'}); } catch {}
-  }
+    }
 
-  (async function init(){
-    const savedTheme = LS.get('theme','system'); setTheme(savedTheme);
-    loadTradingView(); loadQuote();
-    STATE.currentSection = LS.get('lastSection', STATE.pinnedSection || 'Top'); renderChips(); applyDensity();
-    updateOfflineUI(); registerSW(); loadWeather(); loadSection(STATE.currentSection);
-    document.addEventListener('keydown', (e) => { if (e.key === 'r' && !/input|textarea/i.test((document.activeElement||{}).tagName||'')) { e.preventDefault(); refreshCurrentSection(); } });
-    setupShortcuts();
-  })();
+    async function promptLocation() {
+      const input = prompt('🌍 Enter your city or ZIP code:', state.location);
+      if (!input) return;
+      
+      $('#weather').innerHTML = '<div class="text-sm font-medium" style="color:var(--muted)">Loading weather...</div>';
+      
+      try {
+        let query = input.trim();
+        let cityName = query;
+        
+        // If it's a ZIP code, get city name first
+        if (/^\d{5}(-\d{4})?$/.test(query)) {
+          const zipData = await fetch(`https://api.zippopotam.us/us/${query.split('-')[0]}`).then(r => r.json());
+          cityName = `${zipData.places[0]['place name']}, ${zipData.places[0]['state abbreviation']}`;
+          query = cityName;
+        }
+        
+        // Get coordinates for the location
+        const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&format=json`).then(r => r.json());
+        if (!geo.results?.[0]) throw new Error('Location not found');
+        
+        const {latitude: lat, longitude: lon} = geo.results[0];
+        
+        // Get weather data
+        const w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit`).then(r => r.json());
+        const temp = Math.round(w.current.temperature_2m);
+        const hi = Math.round(w.daily.temperature_2m_max[0]);
+        const lo = Math.round(w.daily.temperature_2m_min[0]);
+        
+        state.location = cityName;
+        store.set('location', cityName);
+        
+        $('#weather').innerHTML = `
+          <div class="text-sm font-medium mb-2" style="color:var(--muted)">${cityName}</div>
+          <div class="text-4xl font-bold brand mb-2">${temp}°F</div>
+          <div class="text-xs font-medium" style="color:var(--muted)">Range: ${lo}°F → ${hi}°F</div>
+        `;
+      } catch (e) {
+        $('#weather').innerHTML = '<div class="text-red-400 text-sm font-medium">⚠️ Invalid location or weather unavailable</div>';
+      }
+    }
 
-  document.getElementById('aboutLink').addEventListener('click', (e) => { e.preventDefault(); document.getElementById('about').showModal(); });
+    async function loadWeather() {
+      if (state.location) {
+        promptLocation();
+      } else {
+        getLocationWeather();
+      }
+    }
+
+    function loadQuote() {
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      $('#quote').textContent = `"${q.text}"`;
+      $('#quoteBy').textContent = `— ${q.by}`;
+    }
+
+    function parseRSS(xml) {
+      const doc = new DOMParser().parseFromString(xml, "application/xml");
+      return [...doc.querySelectorAll('item, entry')].map(item => ({
+        title: item.querySelector('title')?.textContent?.trim() || 'Classified',
+        link: item.querySelector('link')?.textContent?.trim() || item.querySelector('link')?.getAttribute('href'),
+        description: item.querySelector('description, summary')?.textContent || '',
+        pubDate: item.querySelector('pubDate, updated')?.textContent
+      })).filter(item => item.link);
+    }
+
+    async function loadNews() {
+      $('#status').innerHTML = '<div class="status-indicator"></div><span>Processing intelligence feeds...</span>';
+      $('#news').innerHTML = Array(8).fill().map((_, i) => 
+        `<div class="news-item p-6" style="animation-delay:${i*0.1}s">
+          <div class="skeleton h-6 w-3/4 rounded-lg mb-3"></div>
+          <div class="skeleton h-4 w-full rounded mb-2"></div>
+          <div class="skeleton h-4 w-2/3 rounded"></div>
+         </div>`
+      ).join('');
+
+      try {
+        const urls = feeds[state.current] || [];
+        let items = [];
+        
+        for (const url of urls.slice(0, 4)) {
+          try {
+            const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const xml = await fetch(proxy).then(r => r.text());
+            items.push(...parseRSS(xml));
+          } catch {}
+        }
+
+        const query = $('#search').value.toLowerCase();
+        const filtered = query ? items.filter(item => 
+          (item.title + ' ' + item.description).toLowerCase().includes(query)
+        ) : items;
+
+        $('#news').innerHTML = filtered.slice(0, 24).map((item, i) => `
+          <article class="news-item hover:shadow-2xl transition-all duration-300" style="animation-delay:${i*0.05}s">
+            <a href="${item.link}" target="_blank" class="block p-6">
+              <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,var(--accent)22,var(--purple)22)">
+                  <img class="w-full h-full object-cover transition-transform duration-300 hover:scale-110" 
+                       loading="lazy" alt="thumbnail"
+                       src="https://www.google.com/s2/favicons?sz=64&domain=${new URL(item.link).hostname}"
+                       onerror="this.style.display='none'">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-semibold mb-2 px-2 py-1 rounded-full inline-block" 
+                       style="background:var(--accent-glow); color:var(--accent)">
+                    ${new URL(item.link).hostname.replace(/^www\./, '').toUpperCase()}
+                  </div>
+                  <h3 class="font-semibold text-lg leading-tight mb-2 hover:text-cyan-400 transition-colors">
+                    ${item.title}
+                  </h3>
+                  <p class="text-sm leading-relaxed mb-4" style="color:var(--muted)">
+                    ${item.description.replace(/<[^>]+>/g, '').slice(0, 200)}${item.description.length > 200 ? '...' : ''}
+                  </p>
+                  <div class="flex items-center gap-4 text-xs font-medium" style="color:var(--muted)">
+                    <button class="hover:text-cyan-400 transition-colors flex items-center gap-1" 
+                            onclick="event.preventDefault(); openReader('${item.title.replace(/'/g, "\\'")}', '${item.link}')">
+                      🔊 Analyze
+                    </button>
+                    <button class="hover:text-purple-400 transition-colors flex items-center gap-1" 
+                            onclick="event.preventDefault(); speak('${item.title.replace(/'/g, "\\'")}')">[🎧] Audio
+                    </button>
+                    <span>${new Date(item.pubDate || Date.now()).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+        `).join('');
+        
+        $('#status').innerHTML = `<div class="status-indicator"></div><span>Intelligence updated • ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+      } catch {
+        $('#status').innerHTML = '<div class="w-2 h-2 rounded-full bg-red-400"></div><span>Feed processing error</span>';
+      }
+    }
+
+    async function openReader(title, url) {
+      $('#readerTitle').textContent = title;
+      $('#readerBody').innerHTML = '<div class="text-center py-8 font-medium" style="color:var(--muted)">🔍 Analyzing document...</div>';
+      $('#readerOpen').href = url;
+      $('#reader').showModal();
+      
+      try {
+        const text = await fetch(`https://r.jina.ai/${url}`).then(r => r.text());
+        $('#readerBody').innerHTML = `<div style="white-space:pre-wrap;font-size:${state.fontSize}rem;line-height:1.6">${text.replace(/[<>]/g, m => ({'<': '&lt;', '>': '&gt;'}[m]))}</div>`;
+      } catch {
+        $('#readerBody').innerHTML = '<div class="text-red-400 text-center py-8">⚠️ Unable to process document</div>';
+      }
+    }
+
+    function speak(text) {
+      if (!window.speechSynthesis) { alert('🔊 Audio synthesis not supported'); return; }
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9; utterance.pitch = 1; utterance.volume = 0.8;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Event Handlers - Consolidated and optimized
+    const handlers = {
+      '#theme': () => setTheme(),
+      '#density': e => { state.density = e.target.value; store.set('density', state.density); },
+      '#private': e => { state.private = e.target.checked; store.set('private', state.private); },
+      '#search': loadNews,
+      '#setLocation': promptLocation,
+      '#closeReader': () => $('#reader').close(),
+      '#speak': () => speak($('#readerTitle').textContent + '. ' + $('#readerBody').textContent.slice(0, 2000)),
+      '#fontUp': () => { 
+        state.fontSize = Math.min(1.8, state.fontSize + 0.1); 
+        store.set('fontSize', state.fontSize); 
+        const body = $('#readerBody div');
+        if (body) body.style.fontSize = state.fontSize + 'rem';
+      },
+      '#fontDown': () => { 
+        state.fontSize = Math.max(0.9, state.fontSize - 0.1); 
+        store.set('fontSize', state.fontSize); 
+        const body = $('#readerBody div');
+        if (body) body.style.fontSize = state.fontSize + 'rem';
+      }
+    };
+
+    Object.entries(handlers).forEach(([selector, handler]) => {
+      const el = $(selector);
+      if (el) {
+        if (selector === '#search') el.oninput = handler;
+        else if (selector === '#density' || selector === '#private') el.onchange = handler;
+        else el.onclick = handler;
+      }
+    });
+
+    // Keyboard shortcuts - Optimized
+    document.onkeydown = e => {
+      const actions = {
+        '/': () => { e.preventDefault(); $('#search').focus(); $('#search').select(); },
+        't': () => { e.preventDefault(); setTheme(); },
+        'r': () => { e.preventDefault(); loadNews(); },
+        'Escape': () => { if ($('#reader').open) $('#reader').close(); }
+      };
+      
+      if (actions[e.key] && document.activeElement !== $('#search')) actions[e.key]();
+      
+      if (/^[1-5]$/.test(e.key) && document.activeElement !== $('#search')) { 
+        e.preventDefault(); 
+        const section = state.sections[e.key - 1];
+        if (section) selectSection(section);
+      }
+    };
+
+    // Initialize - Staggered loading for smooth UX
+    const init = () => {
+      setTheme(store.get('theme', window.matchMedia('(prefers-color-scheme: dark)').matches));
+      $('#density').value = state.density;
+      $('#private').checked = state.private;
+      
+      setTimeout(loadQuote, 100);
+      setTimeout(() => { renderChips(); loadNews(); }, 200);
+      setTimeout(loadWeather, 300);
+      setTimeout(loadTradingView, 400);
+    };
+
+    init();
   </script>
 </body>
 </html>
