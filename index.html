@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Morning News – Executive Dashboard</title>
+  <title>Morning News â€" Executive Dashboard</title>
   <meta name="color-scheme" content="light dark">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -236,6 +236,26 @@
     .premium-scroll::-webkit-scrollbar { width: 6px; }
     .premium-scroll::-webkit-scrollbar-track { background: transparent; }
     .premium-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+    /* AI Summary Styles */
+    .ai-summary {
+      background: linear-gradient(135deg, var(--emerald)11, var(--accent)11);
+      border-left: 3px solid var(--emerald);
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 8px;
+      font-style: italic;
+      position: relative;
+    }
+    .ai-summary::before {
+      content: "🤖 AI Summary";
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--emerald);
+      margin-bottom: 4px;
+      font-style: normal;
+    }
   </style>
 </head>
 <body class="h-full">
@@ -342,7 +362,7 @@
     </div>
     <div id="readerBody" class="p-4 md:p-8 premium-scroll max-h-96 overflow-y-auto"></div>
     <div class="px-4 md:px-8 py-3 md:py-4 text-right">
-      <a id="readerOpen" target="_blank" class="text-xs md:text-sm font-medium underline hover:no-underline" style="color:var(--accent)">View Source →</a>
+      <a id="readerOpen" target="_blank" class="text-xs md:text-sm font-medium underline hover:no-underline" style="color:var(--accent)">View Source â†'</a>
     </div>
   </dialog>
 
@@ -402,6 +422,39 @@
       { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", by: "Winston Churchill" },
       { text: "The way to get started is to quit talking and begin doing.", by: "Walt Disney" }
     ];
+
+    // AI Summary function - simple and reliable
+    function generateAISummary(title, description) {
+      // Smart extractive summarization
+      const text = description.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 15);
+      
+      if (sentences.length === 0) return `${title} - Key developments in this story.`;
+      
+      // Score sentences based on key indicators
+      const keyTerms = ['said', 'announced', 'reported', 'according', 'will', 'new', 'first', 'major'];
+      const scoredSentences = sentences.slice(0, 3).map((sentence, index) => {
+        let score = sentences.length - index; // Position score
+        keyTerms.forEach(term => {
+          if (sentence.toLowerCase().includes(term)) score += 2;
+        });
+        return { sentence: sentence.trim(), score };
+      });
+      
+      // Take best sentence, keep it concise
+      scoredSentences.sort((a, b) => b.score - a.score);
+      let summary = scoredSentences[0].sentence;
+      
+      // Add second sentence if first is short
+      if (summary.length < 120 && scoredSentences[1]) {
+        const addition = scoredSentences[1].sentence;
+        if (summary.length + addition.length < 180) {
+          summary += '. ' + addition;
+        }
+      }
+      
+      return summary.slice(0, 180) + (summary.length > 180 ? '...' : '');
+    }
 
     function setTheme(dark) {
       const isDark = dark ?? !document.documentElement.classList.contains('dark');
@@ -608,6 +661,11 @@
                   <h3 class="font-semibold text-base md:text-lg leading-tight mb-2 hover:text-cyan-400 transition-colors">
                     ${item.title}
                   </h3>
+                  
+                  <div class="ai-summary">
+                    <div class="text-sm leading-relaxed">${generateAISummary(item.title, item.description)}</div>
+                  </div>
+                  
                   <p class="text-sm leading-relaxed mb-3 md:mb-4" style="color:var(--muted)">
                     ${item.description.replace(/<[^>]+>/g, '').slice(0, window.innerWidth < 768 ? 150 : 200)}${item.description.length > (window.innerWidth < 768 ? 150 : 200) ? '...' : ''}
                   </p>
